@@ -59,12 +59,28 @@ async def test_delete_income_entry(client):
 async def test_update_income_entry(client):
     token = await register_and_login(client)
     headers = {"Authorization": f"Bearer {token}"}
-    create = await client.post("/income", json={"amount": 1000.0, "date": "2026-07-10", "source": "Bonus", "is_recurring": False}, headers=headers)
+    create = await client.post("/income", json={
+        "amount": 1000.0,
+        "date": "2026-07-10",
+        "source": "Bonus",
+        "is_recurring": True,
+        "recurrence_period": "monthly",
+        "notes": "Original note"
+    }, headers=headers)
     entry_id = create.json()["id"]
-    update_res = await client.put(f"/income/{entry_id}", json={"amount": 1200.0, "source": "Bonus Extra"}, headers=headers)
+
+    # Update amount & clear notes by passing explicit null, without passing date or recurrence_period
+    update_res = await client.put(f"/income/{entry_id}", json={
+        "amount": 1200.0,
+        "source": "Bonus Extra",
+        "notes": None
+    }, headers=headers)
     assert update_res.status_code == 200
     assert update_res.json()["amount"] == 1200.0
     assert update_res.json()["source"] == "Bonus Extra"
+    assert update_res.json()["notes"] is None
+    assert update_res.json()["recurrence_period"] == "monthly"
+
 
 
 @pytest.mark.asyncio

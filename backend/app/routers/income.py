@@ -88,7 +88,7 @@ async def update_income(
     entry = result.scalar_one_or_none()
     if not entry:
         raise HTTPException(status_code=404, detail="Entrada de renda não encontrada")
-    for key, value in payload.model_dump(exclude_none=True).items():
+    for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(entry, key, value)
     await session.commit()
     await session.refresh(entry)
