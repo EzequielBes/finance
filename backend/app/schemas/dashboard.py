@@ -10,6 +10,8 @@ class TransactionTimelineItem(BaseModel):
     date: date
     category: Optional[str] = None
     transaction_type: str
+    is_recurring: bool
+    installments_total: Optional[int] = None
 
     model_config = {"from_attributes": True}
 
@@ -20,6 +22,7 @@ class PlanMilestoneTimelineItem(BaseModel):
     target_amount: float
     date: date
     plan_name: str
+    status: str
 
     model_config = {"from_attributes": True}
 

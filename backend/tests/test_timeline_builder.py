@@ -18,6 +18,7 @@ class DummyTransaction:
     is_recurring: bool
     type: str
     category: Optional[DummyCategory] = None
+    installments_total: Optional[int] = None
 
 
 @dataclass
