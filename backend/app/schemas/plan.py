@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from app.models.plan import PlanStatus
 from app.services.plan_simulator import PlanSimulation
 
@@ -8,9 +8,9 @@ from app.services.plan_simulator import PlanSimulation
 class PlanCreate(BaseModel):
     name: str
     description: Optional[str] = None
-    target_amount: float
+    target_amount: float = Field(..., gt=0)
     current_savings: float = 0.0
-    monthly_contribution: float
+    monthly_contribution: float = Field(..., ge=0)
     deadline: Optional[date] = None
     priority: int = 1
     notes: Optional[str] = None
@@ -53,7 +53,7 @@ class PlanDetailResponse(PlanResponse):
 
 
 class PlanContributionCreate(BaseModel):
-    amount: float
+    amount: float = Field(..., gt=0)
     date: date
     notes: Optional[str] = None
 

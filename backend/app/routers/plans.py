@@ -52,16 +52,17 @@ async def list_plans(
     current_user: User = Depends(get_current_user),
 ):
     q = select(Plan).where(Plan.user_id == current_user.id)
-    if not include_sub:
-        q = q.where(Plan.parent_plan_id == None)
+    q = q.where(Plan.parent_plan_id.is_(None))
     result = await session.execute(q.order_by(Plan.priority, Plan.created_at))
     plans = result.scalars().all()
     responses = []
     for plan in plans:
-        sub_result = await session.execute(
-            select(Plan).where(Plan.parent_plan_id == plan.id)
-        )
-        sub_plans = sub_result.scalars().all()
+        sub_plans = []
+        if include_sub:
+            sub_result = await session.execute(
+                select(Plan).where(Plan.parent_plan_id == plan.id)
+            )
+            sub_plans = sub_result.scalars().all()
         responses.append(PlanDetailResponse(
             **PlanResponse.model_validate(plan).model_dump(),
             simulation=_build_simulation(plan),
@@ -125,7 +126,7 @@ async def update_plan(
     plan = result.scalar_one_or_none()
     if not plan:
         raise HTTPException(status_code=404, detail="Plano não encontrado")
-    for key, value in payload.model_dump(exclude_none=True).items():
+    for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(plan, key, value)
     plan.updated_at = datetime.now(timezone.utc)
     await session.commit()
