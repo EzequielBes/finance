@@ -691,9 +691,34 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  // Backend retorna eventos discriminados por `type` (transaction | plan_milestone)
+  // sem label/color prontos — mapeamos aqui para o formato que TimelineMap.vue consome.
+  function mapEvent(e) {
+    if (e.type === 'plan_milestone') {
+      return {
+        label: e.title,
+        date: e.date,
+        amount: e.target_amount,
+        type: e.type,
+        color: e.status === 'paused' ? '#94A3B8' : '#10B981', // cinza=pausado, verde=ativo
+      }
+    }
+    // transaction
+    let color = '#3B82F6' // padrão: azul (pontual)
+    if (e.is_recurring) color = '#EF4444' // vermelho=fixo recorrente
+    else if (e.installments_total) color = '#F59E0B' // amarelo=parcelado
+    return {
+      label: e.title,
+      date: e.date,
+      amount: e.amount,
+      type: e.type,
+      color,
+    }
+  }
+
   async function fetchTimeline(monthsAhead = 6) {
     const { data } = await api.get('/dashboard/timeline', { params: { months_ahead: monthsAhead } })
-    timeline.value = data
+    timeline.value = data.map(mapEvent)
   }
 
   return { summary, timeline, loading, fetchSummary, fetchTimeline }
@@ -1874,3 +1899,12 @@ git commit -m "docs: README e verificação final end-to-end"
 - `store.plans` retorna `PlanDetailResponse[]` com campo `simulation` — `PlanCard.vue` usa `plan.simulation.months_to_goal` ✅
 - `api.js` com interceptor JWT — todos os stores usam `api` importado de `@/services/api` ✅
 - `formatCurrency` definida localmente em cada view (sem store compartilhado) — padrão consistente ✅
+
+## Revisão pré-execução (2026-07-31)
+
+Plano conferido contra o backend real (routers/schemas) antes de iniciar a implementação. Divergência encontrada e corrigida:
+
+- **Timeline:** `GET /dashboard/timeline` retorna eventos discriminados (`type: transaction | plan_milestone`) com campos `title`/`amount`/`target_amount`/`category`/`plan_name` — sem `label` ou `color` prontos, que `TimelineMap.vue` espera. Faltavam ainda `is_recurring`/`installments_total` (transaction) e `status` (plan) para aplicar a regra de cor do design (vermelho=recorrente, amarelo=parcelado, verde=ativo, cinza=pausado).
+  - **Backend ajustado** (já aplicado, fora deste plano): `timeline_builder.py` e `schemas/dashboard.py` passaram a incluir `is_recurring`, `installments_total` e `status` nos eventos. Suite de testes backend (48) passa.
+  - **Frontend ajustado** (Task 13, Step 1): `dashboard.js` agora tem `mapEvent()` que transforma a resposta crua da API no shape `{label, date, amount, type, color}` consumido por `TimelineMap.vue`, antes de popular `timeline.value`.
+- Demais rotas/schemas (auth, categories, transactions, income, plans) conferem com o que o plano assume — sem outras divergências.

@@ -14,6 +14,8 @@ class TransactionEvent:
     date: date
     category: Optional[str]
     transaction_type: str
+    is_recurring: bool
+    installments_total: Optional[int]
 
 @dataclass
 class PlanEvent:
@@ -23,6 +25,7 @@ class PlanEvent:
     target_amount: float
     date: date
     plan_name: str
+    status: str
 
 TimelineEvent = Union[TransactionEvent, PlanEvent]
 
@@ -50,6 +53,8 @@ def build_timeline(
                 amount=tx.amount,
                 category=category_name,
                 transaction_type=tx.type,
+                is_recurring=tx.is_recurring,
+                installments_total=tx.installments_total,
             ))
 
     # Marcos dos planos (data estimada de conclusão)
@@ -71,6 +76,7 @@ def build_timeline(
                 title=plan.name,
                 target_amount=plan.target_amount,
                 plan_name=plan.name,
+                status=plan.status,
             ))
 
     events.sort(key=lambda e: e.date)
