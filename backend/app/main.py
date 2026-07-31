@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import create_all_tables
-from app.routers import auth as auth_router, categories as categories_router
+from app.routers import auth as auth_router, categories as categories_router, transactions as transactions_router
 from app.models import user  # noqa: F401
 
 
@@ -24,4 +24,6 @@ app.add_middleware(
 
 app.include_router(auth_router.router)
 app.include_router(categories_router.router)
+app.include_router(transactions_router.router)
+
 
