@@ -1,8 +1,6 @@
 <template>
   <AppLayout>
-    <div class="main-content">
-      <h1 class="page-title">Planos</h1>
-    </div>
+    <h1 class="page-title">Planos</h1>
   </AppLayout>
 </template>
 
