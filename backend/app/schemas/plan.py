@@ -20,8 +20,8 @@ class PlanCreate(BaseModel):
 class PlanUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    target_amount: Optional[float] = None
-    monthly_contribution: Optional[float] = None
+    target_amount: Optional[float] = Field(None, gt=0)
+    monthly_contribution: Optional[float] = Field(None, ge=0)
     deadline: Optional[date] = None
     status: Optional[PlanStatus] = None
     priority: Optional[int] = None

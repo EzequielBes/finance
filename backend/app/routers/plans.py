@@ -55,14 +55,19 @@ async def list_plans(
     q = q.where(Plan.parent_plan_id.is_(None))
     result = await session.execute(q.order_by(Plan.priority, Plan.created_at))
     plans = result.scalars().all()
+    
+    sub_plans_by_parent = {}
+    if include_sub and plans:
+        parent_ids = [p.id for p in plans]
+        sub_result = await session.execute(
+            select(Plan).where(Plan.parent_plan_id.in_(parent_ids))
+        )
+        for sub in sub_result.scalars().all():
+            sub_plans_by_parent.setdefault(sub.parent_plan_id, []).append(sub)
+
     responses = []
     for plan in plans:
-        sub_plans = []
-        if include_sub:
-            sub_result = await session.execute(
-                select(Plan).where(Plan.parent_plan_id == plan.id)
-            )
-            sub_plans = sub_result.scalars().all()
+        sub_plans = sub_plans_by_parent.get(plan.id, [])
         responses.append(PlanDetailResponse(
             **PlanResponse.model_validate(plan).model_dump(),
             simulation=_build_simulation(plan),
