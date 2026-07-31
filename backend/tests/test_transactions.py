@@ -108,3 +108,92 @@ async def test_delete_transaction(client):
     tx_id = create.json()["id"]
     delete = await client.delete(f"/transactions/{tx_id}", headers=headers)
     assert delete.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_update_transaction_remove_category(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    cat_id = await get_category_id(client, headers)
+    create = await client.post("/transactions", json={
+        "category_id": cat_id, "description": "Supermercado", "amount": 150.0,
+        "date": "2026-07-10", "type": "expense", "is_recurring": False
+    }, headers=headers)
+    tx_id = create.json()["id"]
+    assert create.json()["category_id"] == cat_id
+
+    # Remover a categoria explicitamente passando category_id: null
+    update_res = await client.put(f"/transactions/{tx_id}", json={"category_id": None}, headers=headers)
+    assert update_res.status_code == 200
+    assert update_res.json()["category_id"] is None
+
+
+@pytest.mark.asyncio
+async def test_category_ownership_validation_post_and_put(client):
+    await client.post("/auth/register", json={
+        "name": "User 1", "email": "u1@example.com", "password": "password123"
+    })
+    login_u1 = await client.post("/auth/login", json={
+        "email": "u1@example.com", "password": "password123"
+    })
+    headers_user1 = {"Authorization": f"Bearer {login_u1.json()['access_token']}"}
+    cat_id_user1 = await get_category_id(client, headers_user1)
+
+    await client.post("/auth/register", json={
+        "name": "User 2", "email": "u2@example.com", "password": "password123"
+    })
+    login_u2 = await client.post("/auth/login", json={
+        "email": "u2@example.com", "password": "password123"
+    })
+    headers_user2 = {"Authorization": f"Bearer {login_u2.json()['access_token']}"}
+
+    # Tentar criar transação com categoria de outro usuário
+    res_post_invalid = await client.post("/transactions", json={
+        "category_id": cat_id_user1, "description": "Tentativa", "amount": 50.0,
+        "date": "2026-07-10", "type": "expense", "is_recurring": False
+    }, headers=headers_user2)
+    assert res_post_invalid.status_code == 404
+    assert res_post_invalid.json()["detail"] == "Categoria não encontrada"
+
+    # User 2 cria transação sem categoria
+    res_post_ok = await client.post("/transactions", json={
+        "category_id": None, "description": "Válida", "amount": 50.0,
+        "date": "2026-07-10", "type": "expense", "is_recurring": False
+    }, headers=headers_user2)
+    assert res_post_ok.status_code == 201
+    tx_id_user2 = res_post_ok.json()["id"]
+
+    # Tentar atualizar transação do User 2 com categoria do User 1
+    res_put_invalid = await client.put(f"/transactions/{tx_id_user2}", json={
+        "category_id": cat_id_user1
+    }, headers=headers_user2)
+    assert res_put_invalid.status_code == 404
+    assert res_put_invalid.json()["detail"] == "Categoria não encontrada"
+
+
+@pytest.mark.asyncio
+async def test_list_transactions_year_only_filter(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    cat_id = await get_category_id(client, headers)
+    await client.post("/transactions", json={
+        "category_id": cat_id, "description": "Tx 2025", "amount": 100.0,
+        "date": "2025-11-20", "type": "expense", "is_recurring": False
+    }, headers=headers)
+    await client.post("/transactions", json={
+        "category_id": cat_id, "description": "Tx 2026", "amount": 200.0,
+        "date": "2026-05-10", "type": "expense", "is_recurring": False
+    }, headers=headers)
+
+    res_2026 = await client.get("/transactions?year=2026", headers=headers)
+    assert res_2026.status_code == 200
+    items_2026 = res_2026.json()["items"]
+    assert len(items_2026) == 1
+    assert items_2026[0]["description"] == "Tx 2026"
+
+    res_2025 = await client.get("/transactions?year=2025", headers=headers)
+    assert res_2025.status_code == 200
+    items_2025 = res_2025.json()["items"]
+    assert len(items_2025) == 1
+    assert items_2025[0]["description"] == "Tx 2025"
+

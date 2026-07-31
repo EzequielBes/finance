@@ -1,3 +1,4 @@
+import calendar
 import uuid
 from datetime import date
 from dateutil.relativedelta import relativedelta
@@ -8,6 +9,7 @@ from sqlalchemy import select, func, and_
 from app.database import get_async_session
 from app.auth import get_current_user
 from app.models.user import User
+from app.models.category import Category
 from app.models.transaction import Transaction
 from app.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionResponse, TransactionListResponse
 
@@ -41,6 +43,13 @@ async def create_transaction(
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user),
 ):
+    if payload.category_id is not None:
+        cat_result = await session.execute(
+            select(Category).where(Category.id == payload.category_id, Category.user_id == current_user.id)
+        )
+        if not cat_result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Categoria não encontrada")
+
     if payload.installments_total and payload.installments_total > 1:
         transactions = _build_installments(payload, current_user.id)
         for tx in transactions:
@@ -77,11 +86,14 @@ async def list_transactions(
     current_user: User = Depends(get_current_user),
 ):
     filters = [Transaction.user_id == current_user.id]
-    if month and year:
-        from calendar import monthrange
-        last_day = monthrange(year, month)[1]
+    if year and month:
+        last_day = calendar.monthrange(year, month)[1]
         filters.append(Transaction.date >= date(year, month, 1))
         filters.append(Transaction.date <= date(year, month, last_day))
+    elif year:
+        filters.append(Transaction.date >= date(year, 1, 1))
+        filters.append(Transaction.date <= date(year, 12, 31))
+
     if category_id:
         filters.append(Transaction.category_id == category_id)
     if type:
@@ -127,7 +139,17 @@ async def update_transaction(
     tx = result.scalar_one_or_none()
     if not tx:
         raise HTTPException(status_code=404, detail="Transação não encontrada")
-    for key, value in payload.model_dump(exclude_none=True).items():
+
+    update_data = payload.model_dump(exclude_unset=True)
+
+    if "category_id" in update_data and update_data["category_id"] is not None:
+        cat_result = await session.execute(
+            select(Category).where(Category.id == update_data["category_id"], Category.user_id == current_user.id)
+        )
+        if not cat_result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Categoria não encontrada")
+
+    for key, value in update_data.items():
         setattr(tx, key, value)
     await session.commit()
     await session.refresh(tx)
