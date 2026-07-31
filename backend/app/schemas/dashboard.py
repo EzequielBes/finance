@@ -11,6 +11,8 @@ class TransactionTimelineItem(BaseModel):
     category: Optional[str] = None
     transaction_type: str
 
+    model_config = {"from_attributes": True}
+
 class PlanMilestoneTimelineItem(BaseModel):
     type: Literal["plan_milestone"]
     id: int
@@ -18,6 +20,8 @@ class PlanMilestoneTimelineItem(BaseModel):
     target_amount: float
     date: date
     plan_name: str
+
+    model_config = {"from_attributes": True}
 
 TimelineEventResponse = Annotated[
     Union[TransactionTimelineItem, PlanMilestoneTimelineItem],
