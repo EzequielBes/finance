@@ -9,6 +9,7 @@ const store = usePlansStore()
 const showContrib = ref(false)
 const contribAmount = ref('')
 const contribDate = ref(new Date().toISOString().slice(0, 10))
+const error = ref('')
 
 const statusLabels = { active: 'Ativo', paused: 'Pausado', cancelled: 'Cancelado', completed: 'Concluído' }
 const statusVariants = { active: 'badge-success', paused: 'badge-warning', cancelled: 'badge-danger', completed: 'badge-info' }
@@ -18,24 +19,39 @@ function formatCurrency(val) {
 }
 
 async function submitContrib() {
-  await store.addContribution(props.plan.id, {
-    amount: parseFloat(contribAmount.value),
-    date: contribDate.value,
-  })
-  showContrib.value = false
-  contribAmount.value = ''
-  emit('refresh')
+  error.value = ''
+  try {
+    await store.addContribution(props.plan.id, {
+      amount: parseFloat(contribAmount.value),
+      date: contribDate.value,
+    })
+    showContrib.value = false
+    contribAmount.value = ''
+    emit('refresh')
+  } catch (e) {
+    error.value = e.response?.data?.detail || 'Erro ao registrar aporte'
+  }
 }
 
 async function remove() {
   if (!confirm(`Deletar plano "${props.plan.name}"?`)) return
-  await store.deletePlan(props.plan.id)
-  emit('refresh')
+  error.value = ''
+  try {
+    await store.deletePlan(props.plan.id)
+    emit('refresh')
+  } catch (e) {
+    error.value = e.response?.data?.detail || 'Erro ao excluir plano'
+  }
 }
 
 async function toggleStatus(status) {
-  await store.updatePlan(props.plan.id, { status })
-  emit('refresh')
+  error.value = ''
+  try {
+    await store.updatePlan(props.plan.id, { status })
+    emit('refresh')
+  } catch (e) {
+    error.value = e.response?.data?.detail || 'Erro ao atualizar plano'
+  }
 }
 </script>
 
@@ -90,7 +106,7 @@ async function toggleStatus(status) {
       <form v-if="showContrib" @submit.prevent="submitContrib" style="margin-top:0.75rem;display:flex;gap:0.75rem;align-items:flex-end">
         <div class="form-group" style="flex:1">
           <label class="form-label">Valor (R$)</label>
-          <input v-model="contribAmount" class="form-input" type="number" step="0.01" required />
+          <input v-model="contribAmount" class="form-input" type="number" step="0.01" min="0.01" required />
         </div>
         <div class="form-group">
           <label class="form-label">Data</label>
@@ -98,6 +114,7 @@ async function toggleStatus(status) {
         </div>
         <button type="submit" class="btn btn-primary btn-sm">Salvar</button>
       </form>
+      <div v-if="error" class="error-msg" style="margin-top:0.75rem">{{ error }}</div>
     </div>
   </div>
 </template>
@@ -109,4 +126,5 @@ async function toggleStatus(status) {
 .plan-amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 .sub-plans { margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-subtle); }
 .sub-plan-item { display: flex; justify-content: space-between; padding: 0.375rem 0; font-size: var(--font-size-sm); }
+.error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--accent-danger); padding: 0.625rem; border-radius: var(--radius-sm); font-size: var(--font-size-sm); }
 </style>

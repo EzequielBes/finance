@@ -9,7 +9,7 @@ export const usePlansStore = defineStore('plans', () => {
   async function fetchPlans() {
     loading.value = true
     try {
-      const { data } = await api.get('/plans')
+      const { data } = await api.get('/plans', { params: { include_sub: true } })
       plans.value = data
     } finally {
       loading.value = false
