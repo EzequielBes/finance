@@ -1,7 +1,7 @@
 import enum
 from datetime import date, datetime, timezone
 from sqlalchemy import Integer, String, Float, Boolean, Date, DateTime, ForeignKey, Enum as SAEnum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
 
@@ -22,6 +22,7 @@ class Transaction(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     category_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("categories.id"), nullable=True)
+    category = relationship("Category")
     description: Mapped[str] = mapped_column(String(255), nullable=False)
     amount: Mapped[float] = mapped_column(Float, nullable=False)
     date: Mapped[date] = mapped_column(Date, nullable=False, index=True)

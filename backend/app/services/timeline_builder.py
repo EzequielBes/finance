@@ -1,19 +1,30 @@
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
-from typing import Optional
+from typing import Optional, Union
 from dateutil.relativedelta import relativedelta
 from app.services.plan_simulator import simulate_plan
 
 
 @dataclass
-class TimelineEvent:
+class TransactionEvent:
+    type: str
+    id: int
+    title: str
+    amount: float
     date: date
-    type: str  # "transaction" | "plan_milestone"
-    label: str
-    amount: Optional[float]
-    color: str
-    icon: str
     category: Optional[str]
+    transaction_type: str
+
+@dataclass
+class PlanEvent:
+    type: str
+    id: int
+    title: str
+    target_amount: float
+    date: date
+    plan_name: str
+
+TimelineEvent = Union[TransactionEvent, PlanEvent]
 
 
 def build_timeline(
@@ -30,15 +41,15 @@ def build_timeline(
     for tx in transactions:
         tx_date = tx.date if isinstance(tx.date, date) else tx.date
         if reference_date <= tx_date <= cutoff:
-            color = "#EF4444" if tx.is_recurring else "#F59E0B"
-            events.append(TimelineEvent(
+            category_name = tx.category.name if getattr(tx, "category", None) else None
+            events.append(TransactionEvent(
                 date=tx_date,
                 type="transaction",
-                label=tx.description,
+                id=tx.id,
+                title=tx.description,
                 amount=tx.amount,
-                color=color,
-                icon="receipt",
-                category=None,
+                category=category_name,
+                transaction_type=tx.type,
             ))
 
     # Marcos dos planos (data estimada de conclusão)
@@ -52,15 +63,14 @@ def build_timeline(
             reference_date=reference_date,
         )
         target_date = plan.deadline or sim.estimated_date
-        if target_date and target_date >= reference_date:
-            events.append(TimelineEvent(
+        if target_date and reference_date <= target_date <= cutoff:
+            events.append(PlanEvent(
                 date=target_date,
                 type="plan_milestone",
-                label=plan.name,
-                amount=plan.target_amount,
-                color="#10B981",
-                icon="flag",
-                category=None,
+                id=plan.id,
+                title=plan.name,
+                target_amount=plan.target_amount,
+                plan_name=plan.name,
             ))
 
     events.sort(key=lambda e: e.date)

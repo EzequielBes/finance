@@ -12,7 +12,9 @@ from app.models.transaction import Transaction
 from app.models.income_entry import IncomeEntry
 from app.models.category import Category
 from app.models.plan import Plan
-from app.services.timeline_builder import build_timeline, TimelineEvent
+from app.services.timeline_builder import build_timeline
+from sqlalchemy.orm import selectinload
+from app.schemas.dashboard import TimelineEventResponse
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -31,16 +33,6 @@ class DashboardSummary(BaseModel):
     balance: float
     savings_percent: float
     by_category: list[CategorySummary]
-
-
-class TimelineEventResponse(BaseModel):
-    date: date
-    type: str
-    label: str
-    amount: Optional[float]
-    color: str
-    icon: str
-    category: Optional[str]
 
 
 @router.get("/summary", response_model=DashboardSummary)
@@ -83,22 +75,24 @@ async def get_summary(
         select(Category).where(Category.user_id == current_user.id, Category.type == "expense")
     )
     categories = cats_result.scalars().all()
+    cats_map = {c.id: c for c in categories}
+
+    cat_totals_result = await session.execute(
+        select(Transaction.category_id, func.sum(Transaction.amount)).where(
+            and_(
+                Transaction.user_id == current_user.id,
+                Transaction.type == "expense",
+                Transaction.date >= start,
+                Transaction.date <= end,
+            )
+        ).group_by(Transaction.category_id)
+    )
+    cat_totals = cat_totals_result.all()
 
     by_category = []
-    for cat in categories:
-        cat_total_result = await session.execute(
-            select(func.sum(Transaction.amount)).where(
-                and_(
-                    Transaction.user_id == current_user.id,
-                    Transaction.category_id == cat.id,
-                    Transaction.type == "expense",
-                    Transaction.date >= start,
-                    Transaction.date <= end,
-                )
-            )
-        )
-        cat_total = cat_total_result.scalar_one() or 0.0
-        if cat_total > 0:
+    for cat_id, cat_total in cat_totals:
+        if cat_id in cats_map and cat_total and cat_total > 0:
+            cat = cats_map[cat_id]
             by_category.append(CategorySummary(
                 name=cat.name,
                 color=cat.color,
@@ -132,7 +126,7 @@ async def get_timeline(
     tx_result = await session.execute(
         select(Transaction).where(
             and_(Transaction.user_id == current_user.id, Transaction.date >= now, Transaction.date <= cutoff)
-        )
+        ).options(selectinload(Transaction.category))
     )
     transactions = tx_result.scalars().all()
 
@@ -142,7 +136,4 @@ async def get_timeline(
     plans = plans_result.scalars().all()
 
     events = build_timeline(transactions, plans, reference_date=now, months_ahead=months_ahead)
-    return [TimelineEventResponse(
-        date=e.date, type=e.type, label=e.label, amount=e.amount,
-        color=e.color, icon=e.icon, category=e.category
-    ) for e in events]
+    return events
