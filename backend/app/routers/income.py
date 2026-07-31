@@ -37,7 +37,11 @@ async def get_income_summary(
     three_months_ago = now - relativedelta(months=3)
     avg_result = await session.execute(
         select(func.avg(IncomeEntry.amount)).where(
-            and_(IncomeEntry.user_id == current_user.id, IncomeEntry.date >= three_months_ago)
+            and_(
+                IncomeEntry.user_id == current_user.id,
+                IncomeEntry.date >= three_months_ago,
+                IncomeEntry.date <= now,
+            )
         )
     )
     avg = avg_result.scalar_one() or 0.0
@@ -65,10 +69,14 @@ async def list_income(
     current_user: User = Depends(get_current_user),
 ):
     filters = [IncomeEntry.user_id == current_user.id]
-    if month and year:
-        last_day = monthrange(year, month)[1]
-        filters.append(IncomeEntry.date >= date(year, month, 1))
-        filters.append(IncomeEntry.date <= date(year, month, last_day))
+    if year:
+        if month:
+            last_day = monthrange(year, month)[1]
+            filters.append(IncomeEntry.date >= date(year, month, 1))
+            filters.append(IncomeEntry.date <= date(year, month, last_day))
+        else:
+            filters.append(IncomeEntry.date >= date(year, 1, 1))
+            filters.append(IncomeEntry.date <= date(year, 12, 31))
     result = await session.execute(
         select(IncomeEntry).where(and_(*filters)).order_by(IncomeEntry.date.desc())
     )

@@ -77,3 +77,25 @@ async def test_cannot_access_others_category(client):
 
     response = await client.delete(f"/categories/{cat_id}", headers={"Authorization": f"Bearer {token2}"})
     assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_cannot_update_others_category(client):
+    # User A cria uma categoria
+    token_a = await register_and_login(client)
+    create = await client.post("/categories", json={
+        "name": "Cat de A", "type": "expense", "color": "#111", "icon": "tag"
+    }, headers={"Authorization": f"Bearer {token_a}"})
+    cat_id = create.json()["id"]
+
+    # User B se registra e tenta fazer PUT na categoria de A
+    token_b = await register_and_login(
+        client,
+        email="catb@email.com",
+        name="Cat User B",
+        password="senhaB999",
+    )
+    response = await client.put(f"/categories/{cat_id}", json={
+        "name": "Hackeada", "type": "expense", "color": "#222", "icon": "skull"
+    }, headers={"Authorization": f"Bearer {token_b}"})
+    assert response.status_code == 404

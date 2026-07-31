@@ -10,7 +10,7 @@ from app.database import get_async_session
 from app.auth import get_current_user
 from app.models.user import User
 from app.models.category import Category
-from app.models.transaction import Transaction
+from app.models.transaction import Transaction, TransactionType
 from app.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionResponse, TransactionListResponse
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
@@ -79,12 +79,14 @@ async def list_transactions(
     month: Optional[int] = Query(None, ge=1, le=12),
     year: Optional[int] = Query(None),
     category_id: Optional[int] = None,
-    type: Optional[str] = None,
+    type: Optional[TransactionType] = None,
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=200),
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user),
 ):
+    if month and not year:
+        raise HTTPException(status_code=400, detail="Year is required when month is provided")
     filters = [Transaction.user_id == current_user.id]
     if year and month:
         last_day = calendar.monthrange(year, month)[1]

@@ -197,3 +197,37 @@ async def test_list_transactions_year_only_filter(client):
     assert len(items_2025) == 1
     assert items_2025[0]["description"] == "Tx 2025"
 
+
+@pytest.mark.asyncio
+async def test_cannot_access_others_transaction(client):
+    # User A cria uma transação
+    token_a = await register_and_login(client)
+    headers_a = {"Authorization": f"Bearer {token_a}"}
+    create = await client.post("/transactions", json={
+        "category_id": None, "description": "Privado de A", "amount": 99.0,
+        "date": "2026-06-01", "type": "expense", "is_recurring": False
+    }, headers=headers_a)
+    assert create.status_code == 201
+    tx_id = create.json()["id"]
+
+    # User B se registra e faz login
+    token_b = await register_and_login(
+        client,
+        email="userb@email.com",
+        name="User B",
+        password="senhaB123",
+    )
+    headers_b = {"Authorization": f"Bearer {token_b}"}
+
+    # GET deve retornar 404
+    r_get = await client.get(f"/transactions/{tx_id}", headers=headers_b)
+    assert r_get.status_code == 404
+
+    # PUT deve retornar 404
+    r_put = await client.put(f"/transactions/{tx_id}", json={"description": "Hackeado"}, headers=headers_b)
+    assert r_put.status_code == 404
+
+    # DELETE deve retornar 404
+    r_del = await client.delete(f"/transactions/{tx_id}", headers=headers_b)
+    assert r_del.status_code == 404
+
