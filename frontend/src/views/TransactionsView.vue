@@ -5,13 +5,20 @@ import { useTransactionsStore } from '@/stores/transactions'
 
 const store = useTransactionsStore()
 const showForm = ref(false)
+const showCategoryForm = ref(false)
 
 const form = ref({
   description: '', amount: '', date: new Date().toISOString().slice(0, 10),
   type: 'expense', category_id: null, is_recurring: false,
   recurrence_period: null, installments_total: null
 })
+const categoryForm = ref({
+  name: '',
+  type: 'expense',
+  color: '#6C63FF'
+})
 const error = ref('')
+const categoryError = ref('')
 
 function formatCurrency(val) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
@@ -34,6 +41,25 @@ async function submit() {
     await store.fetchTransactions()
   } catch (e) {
     error.value = e.response?.data?.detail || 'Erro ao salvar'
+  }
+}
+
+async function submitCategory() {
+  categoryError.value = ''
+  try {
+    await store.createCategory({
+      name: categoryForm.value.name,
+      type: categoryForm.value.type,
+      color: categoryForm.value.color
+    })
+    showCategoryForm.value = false
+    categoryForm.value = {
+      name: '',
+      type: 'expense',
+      color: '#6C63FF'
+    }
+  } catch (e) {
+    categoryError.value = e.response?.data?.detail || 'Erro ao criar categoria'
   }
 }
 
@@ -83,11 +109,41 @@ onMounted(async () => {
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Categoria</label>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+            <label class="form-label">Categoria</label>
+            <button type="button" class="btn btn-secondary btn-sm" @click="showCategoryForm = !showCategoryForm">
+              {{ showCategoryForm ? '✕' : '+ Nova' }}
+            </button>
+          </div>
           <select v-model="form.category_id" class="form-input">
             <option :value="null">Sem categoria</option>
             <option v-for="cat in store.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
           </select>
+          <!-- Mini formulário de categoria -->
+          <div v-if="showCategoryForm" style="margin-top:0.75rem;padding:0.75rem;background:var(--bg-subtle);border-radius:var(--radius-sm);border:1px solid var(--border-subtle)">
+            <div class="form-group" style="margin-bottom:0.75rem">
+              <label class="form-label">Nome da categoria</label>
+              <input v-model="categoryForm.name" class="form-input" type="text" required placeholder="Ex: Energia" />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Tipo</label>
+                <select v-model="categoryForm.type" class="form-input">
+                  <option value="expense">Gasto</option>
+                  <option value="income">Receita</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Cor</label>
+                <input v-model="categoryForm.color" class="form-input" type="color" />
+              </div>
+            </div>
+            <div v-if="categoryError" class="error-msg" style="margin-top:0.75rem">{{ categoryError }}</div>
+            <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
+              <button type="button" class="btn btn-primary btn-sm" @click="submitCategory">Criar</button>
+              <button type="button" class="btn btn-secondary btn-sm" @click="showCategoryForm = false">Cancelar</button>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Recorrente?</label>
