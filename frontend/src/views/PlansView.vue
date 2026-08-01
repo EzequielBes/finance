@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import PlanCard from '@/components/plans/PlanCard.vue'
 import PlanSimulator from '@/components/plans/PlanSimulator.vue'
+import AppIcon from '@/components/common/AppIcon.vue'
 import { usePlansStore } from '@/stores/plans'
 
 const store = usePlansStore()
@@ -93,7 +94,7 @@ onMounted(store.fetchPlans)
       <div v-for="i in 3" :key="i" class="skeleton" style="height:200px;border-radius:var(--radius-lg)" />
     </div>
     <div v-else-if="!store.plans.length" class="card" style="text-align:center;padding:3rem">
-      <div style="font-size:3rem;margin-bottom:1rem">🎯</div>
+      <AppIcon name="target" :size="40" style="color: var(--accent-primary); margin-bottom: 1rem" />
       <p class="text-muted">Nenhum plano criado ainda. Crie seu primeiro objetivo!</p>
     </div>
     <div v-else class="grid-2">

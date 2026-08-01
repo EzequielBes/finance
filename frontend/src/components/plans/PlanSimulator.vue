@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue'
+import AppIcon from '@/components/common/AppIcon.vue'
 import { usePlansStore } from '@/stores/plans'
 
 const props = defineProps({ plan: Object })
@@ -25,7 +26,10 @@ watch(contribution, async (newVal) => {
 
 <template>
   <div class="simulator card" style="margin-top:0.75rem">
-    <div class="font-semibold text-sm" style="margin-bottom:0.75rem">🧮 Simulador interativo</div>
+    <div class="font-semibold text-sm" style="margin-bottom:0.75rem; display:flex; align-items:center; gap:0.5rem">
+      <AppIcon name="calculator" :size="16" style="color: var(--accent-primary)" />
+      Simulador interativo
+    </div>
     <div class="form-group">
       <label class="form-label">Contribuição mensal: {{ formatCurrency(contribution) }}</label>
       <input
