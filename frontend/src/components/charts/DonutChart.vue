@@ -22,7 +22,7 @@ const options = {
   maintainAspectRatio: false,
   cutout: '70%',
   plugins: {
-    legend: { position: 'right', labels: { color: '#94A3B8', font: { family: 'Inter' }, padding: 16, boxWidth: 12 } },
+    legend: { position: 'right', labels: { color: '#a89c8e', padding: 16, boxWidth: 12 } },
     tooltip: { callbacks: { label: (ctx) => ` R$ ${ctx.parsed.toFixed(2)}` } }
   }
 }

@@ -15,12 +15,12 @@ const chartData = computed(() => ({
   datasets: [
     {
       label: 'Receita', data: props.incomeData,
-      borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.1)',
+      borderColor: '#7a9b7e', backgroundColor: 'rgba(122,155,126,0.1)',
       fill: true, tension: 0.4, pointRadius: 4,
     },
     {
       label: 'Gasto', data: props.expenseData,
-      borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.1)',
+      borderColor: '#b8563a', backgroundColor: 'rgba(184,86,58,0.1)',
       fill: true, tension: 0.4, pointRadius: 4,
     }
   ]
@@ -29,10 +29,10 @@ const chartData = computed(() => ({
 const options = {
   responsive: true, maintainAspectRatio: false,
   scales: {
-    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8' } },
-    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', callback: (v) => `R$${v}` } }
+    x: { grid: { color: 'rgba(44,38,32,0.6)' }, ticks: { color: '#a89c8e' } },
+    y: { grid: { color: 'rgba(44,38,32,0.6)' }, ticks: { color: '#a89c8e', callback: (v) => `R$${v}` } }
   },
-  plugins: { legend: { labels: { color: '#94A3B8', font: { family: 'Inter' } } } }
+  plugins: { legend: { labels: { color: '#a89c8e' } } }
 }
 </script>
 

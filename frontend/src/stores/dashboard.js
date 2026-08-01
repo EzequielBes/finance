@@ -29,13 +29,13 @@ export const useDashboardStore = defineStore('dashboard', () => {
         date: e.date,
         amount: e.target_amount,
         type: e.type,
-        color: e.status === 'paused' ? '#94A3B8' : '#10B981', // cinza=pausado, verde=ativo
+        color: e.status === 'paused' ? '#8a7d6e' : '#7a9b7e', // cinza=pausado, verde=ativo
       }
     }
     // transaction
-    let color = '#3B82F6' // padrão: azul (pontual)
-    if (e.is_recurring) color = '#EF4444' // vermelho=fixo recorrente
-    else if (e.installments_total) color = '#F59E0B' // amarelo=parcelado
+    let color = '#8a9bb0' // padrão: azul (pontual)
+    if (e.is_recurring) color = '#b8563a' // vermelho=fixo recorrente
+    else if (e.installments_total) color = '#c17a54' // amarelo=parcelado
     return {
       label: e.title,
       date: e.date,

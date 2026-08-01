@@ -107,5 +107,4 @@ onMounted(store.fetchPlans)
 </template>
 
 <style scoped>
-.error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--accent-danger); padding: 0.625rem; border-radius: var(--radius-sm); font-size: var(--font-size-sm); }
 </style>

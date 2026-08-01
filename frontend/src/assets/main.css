@@ -128,6 +128,9 @@ select.form-input { cursor: pointer; }
   transition: width var(--transition-slow);
 }
 
+/* Mensagens de erro */
+.error-msg { background: rgba(184,86,58,0.12); border: 1px solid rgba(184,86,58,0.3); color: var(--accent-danger); padding: 0.625rem; border-radius: var(--radius-sm); font-size: var(--font-size-sm); }
+
 /* Utilitários */
 .text-success { color: var(--accent-success); }
 .text-danger { color: var(--accent-danger); }

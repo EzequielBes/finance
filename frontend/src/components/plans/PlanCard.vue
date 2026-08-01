@@ -126,5 +126,4 @@ async function toggleStatus(status) {
 .plan-amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 .sub-plans { margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-subtle); }
 .sub-plan-item { display: flex; justify-content: space-between; padding: 0.375rem 0; font-size: var(--font-size-sm); }
-.error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--accent-danger); padding: 0.625rem; border-radius: var(--radius-sm); font-size: var(--font-size-sm); }
 </style>

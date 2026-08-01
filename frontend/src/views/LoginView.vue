@@ -97,5 +97,4 @@ async function submit() {
   height: 2px; background: var(--accent-primary);
 }
 .form-stack { display: flex; flex-direction: column; gap: 1rem; }
-.error-msg { background: rgba(184,86,58,0.12); border: 1px solid rgba(184,86,58,0.3); color: var(--accent-danger); padding: 0.625rem; border-radius: var(--radius-sm); font-size: var(--font-size-sm); }
 </style>

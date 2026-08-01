@@ -15,7 +15,7 @@ const form = ref({
 const categoryForm = ref({
   name: '',
   type: 'expense',
-  color: '#6C63FF'
+  color: '#c17a54'
 })
 const error = ref('')
 const categoryError = ref('')
@@ -63,7 +63,7 @@ async function submitCategory() {
     categoryForm.value = {
       name: '',
       type: 'expense',
-      color: '#6C63FF'
+      color: '#c17a54'
     }
   } catch (e) {
     categoryError.value = e.response?.data?.detail || 'Erro ao criar categoria'
@@ -222,5 +222,4 @@ onMounted(async () => {
 .tx-table th { text-align: left; padding: 0.5rem 0.75rem; font-size: var(--font-size-xs); color: var(--text-muted); font-weight: 600; border-bottom: 1px solid var(--border-subtle); }
 .tx-table td { padding: 0.75rem; border-bottom: 1px solid var(--border-subtle); font-size: var(--font-size-sm); }
 .tx-table tr:last-child td { border-bottom: none; }
-.error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--accent-danger); padding: 0.625rem; border-radius: var(--radius-sm); font-size: var(--font-size-sm); }
 </style>
