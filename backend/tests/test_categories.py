@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 from tests.helpers import register_and_login
 
@@ -178,3 +180,51 @@ async def test_seed_defaults_skips_existing_by_name_case_insensitive(client):
 
     list_response = await client.get("/categories", headers=headers)
     assert len(list_response.json()) == 11
+
+
+@pytest.mark.asyncio
+async def test_list_categories_includes_current_month_usage(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    cat = await client.post("/categories", json={
+        "name": "Alimentação", "type": "expense", "color": "#c17a54", "icon": "tag", "monthly_limit": 1000.0
+    }, headers=headers)
+    cat_id = cat.json()["id"]
+
+    today = date.today()
+    await client.post("/transactions", json={
+        "description": "Mercado", "amount": 300.0, "date": today.isoformat(),
+        "type": "expense", "category_id": cat_id, "is_recurring": False
+    }, headers=headers)
+    await client.post("/transactions", json={
+        "description": "Mercado 2", "amount": 150.0, "date": today.isoformat(),
+        "type": "expense", "category_id": cat_id, "is_recurring": False
+    }, headers=headers)
+
+    response = await client.get("/categories", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    found = next(c for c in data if c["id"] == cat_id)
+    assert found["current_month_usage"] == 450.0
+
+
+@pytest.mark.asyncio
+async def test_list_categories_usage_excludes_previous_month(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    cat = await client.post("/categories", json={
+        "name": "Lazer", "type": "expense", "color": "#c17a54", "icon": "tag"
+    }, headers=headers)
+    cat_id = cat.json()["id"]
+
+    old_date = date.today().replace(day=1) - __import__("datetime").timedelta(days=5)
+    await client.post("/transactions", json={
+        "description": "Cinema mês passado", "amount": 80.0, "date": old_date.isoformat(),
+        "type": "expense", "category_id": cat_id, "is_recurring": False
+    }, headers=headers)
+
+    response = await client.get("/categories", headers=headers)
+    found = next(c for c in response.json() if c["id"] == cat_id)
+    assert found["current_month_usage"] == 0.0

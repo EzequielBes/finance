@@ -1,10 +1,13 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func, and_
 from app.database import get_async_session
 from app.auth import get_current_user
 from app.models.user import User
 from app.models.category import Category
+from app.models.transaction import Transaction
 from app.schemas.category import CategoryCreate, CategoryUpdate, CategoryResponse
 
 router = APIRouter(prefix="/categories", tags=["categories"])
@@ -69,7 +72,30 @@ async def list_categories(
     current_user: User = Depends(get_current_user),
 ):
     result = await session.execute(select(Category).where(Category.user_id == current_user.id))
-    return result.scalars().all()
+    categories = result.scalars().all()
+
+    today = date.today()
+    month_start = today.replace(day=1)
+
+    usage_result = await session.execute(
+        select(Transaction.category_id, func.sum(Transaction.amount))
+        .where(
+            and_(
+                Transaction.user_id == current_user.id,
+                Transaction.date >= month_start,
+                Transaction.date <= today,
+            )
+        )
+        .group_by(Transaction.category_id)
+    )
+    usage_by_category = {cat_id: total for cat_id, total in usage_result.all() if cat_id is not None}
+
+    response = []
+    for cat in categories:
+        item = CategoryResponse.model_validate(cat)
+        item.current_month_usage = round(usage_by_category.get(cat.id, 0.0) or 0.0, 2)
+        response.append(item)
+    return response
 
 
 @router.put("/{category_id}", response_model=CategoryResponse)
