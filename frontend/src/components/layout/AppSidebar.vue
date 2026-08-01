@@ -11,6 +11,7 @@ const navItems = [
   { path: '/transactions', icon: 'transactions', label: 'Transações' },
   { path: '/income', icon: 'income', label: 'Renda' },
   { path: '/plans', icon: 'plans', label: 'Planos' },
+  { path: '/categories', icon: 'categories', label: 'Categorias' },
   { path: '/reports', icon: 'reports', label: 'Relatórios' },
 ]
 </script>
