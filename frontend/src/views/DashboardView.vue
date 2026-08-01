@@ -1,7 +1,8 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import StatCard from '@/components/dashboard/StatCard.vue'
+import ProgressRing from '@/components/dashboard/ProgressRing.vue'
 import DonutChart from '@/components/charts/DonutChart.vue'
 import TimelineMap from '@/components/timeline/TimelineMap.vue'
 import { useDashboardStore } from '@/stores/dashboard'
@@ -30,12 +31,20 @@ onMounted(async () => {
     </div>
 
     <div v-else>
-      <!-- Stat Cards -->
-      <div class="grid-4" style="margin-bottom:1.5rem">
-        <StatCard label="Receita do mês" :value="formatCurrency(dash.summary?.total_income)" icon="💰" variant="success" />
-        <StatCard label="Total gasto" :value="formatCurrency(dash.summary?.total_expense)" icon="💸" variant="danger" />
-        <StatCard label="Saldo disponível" :value="formatCurrency(dash.summary?.balance)" icon="🏦" />
-        <StatCard label="Economizado" :value="`${dash.summary?.savings_percent || 0}%`" icon="📈" variant="success" :subtitle="`do total recebido`" />
+      <!-- Hero: anel de saúde financeira + saldo em destaque -->
+      <div class="dashboard-hero card">
+        <ProgressRing :percent="dash.summary?.savings_percent || 0" />
+        <div class="hero-text">
+          <div class="hero-eyebrow text-muted">saldo disponível</div>
+          <h2 class="hero-value">{{ formatCurrency(dash.summary?.balance) }}</h2>
+        </div>
+      </div>
+
+      <!-- Stat Cards secundários -->
+      <div class="grid-3" style="margin: 1.5rem 0">
+        <StatCard label="Receita do mês" :value="formatCurrency(dash.summary?.total_income)" icon="trending-up" variant="success" />
+        <StatCard label="Total gasto" :value="formatCurrency(dash.summary?.total_expense)" icon="trending-down" variant="danger" />
+        <StatCard label="Economizado" :value="`${dash.summary?.savings_percent || 0}%`" icon="wallet" variant="success" subtitle="do total recebido" />
       </div>
 
       <!-- Gráfico + Timeline -->
@@ -52,3 +61,12 @@ onMounted(async () => {
     </div>
   </AppLayout>
 </template>
+
+<style scoped>
+.dashboard-hero { display: flex; align-items: center; gap: 3rem; padding: 2.5rem; }
+.hero-eyebrow { font-family: var(--font-sans); font-size: var(--font-size-xs); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+.hero-value { font-family: var(--font-serif); font-size: 2.75rem; font-weight: 500; color: var(--text-primary); }
+@media (max-width: 768px) {
+  .dashboard-hero { flex-direction: column; text-align: center; gap: 1.5rem; padding: 1.5rem; }
+}
+</style>
