@@ -133,3 +133,48 @@ async def test_update_category_monthly_limit(client):
     }, headers=headers)
     assert response.status_code == 200
     assert response.json()["monthly_limit"] == 300.0
+
+
+@pytest.mark.asyncio
+async def test_seed_defaults_creates_eleven_categories(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    response = await client.post("/categories/seed-defaults", headers=headers)
+    assert response.status_code == 201
+    data = response.json()
+    assert len(data) == 11
+    names = {c["name"] for c in data}
+    assert "Moradia" in names
+    assert "Salário" in names
+
+
+@pytest.mark.asyncio
+async def test_seed_defaults_is_idempotent(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    await client.post("/categories/seed-defaults", headers=headers)
+    response = await client.post("/categories/seed-defaults", headers=headers)
+    assert response.status_code == 201
+    assert response.json() == []
+
+    list_response = await client.get("/categories", headers=headers)
+    assert len(list_response.json()) == 11
+
+
+@pytest.mark.asyncio
+async def test_seed_defaults_skips_existing_by_name_case_insensitive(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    await client.post("/categories", json={
+        "name": "moradia", "type": "expense", "color": "#000000", "icon": "tag"
+    }, headers=headers)
+
+    response = await client.post("/categories/seed-defaults", headers=headers)
+    assert response.status_code == 201
+    data = response.json()
+    assert len(data) == 10
+    names = {c["name"] for c in data}
+    assert "Moradia" not in names
+
+    list_response = await client.get("/categories", headers=headers)
+    assert len(list_response.json()) == 11
