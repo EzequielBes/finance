@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import { useTransactionsStore } from '@/stores/transactions'
 
@@ -19,6 +19,12 @@ const categoryForm = ref({
 })
 const error = ref('')
 const categoryError = ref('')
+
+watch(() => form.value.is_recurring, (isRecurring) => {
+  if (isRecurring) {
+    form.value.installments_total = null
+  }
+})
 
 function formatCurrency(val) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
@@ -47,11 +53,12 @@ async function submit() {
 async function submitCategory() {
   categoryError.value = ''
   try {
-    await store.createCategory({
+    const newCategory = await store.createCategory({
       name: categoryForm.value.name,
       type: categoryForm.value.type,
       color: categoryForm.value.color
     })
+    form.value.category_id = newCategory.id
     showCategoryForm.value = false
     categoryForm.value = {
       name: '',
@@ -117,10 +124,10 @@ onMounted(async () => {
           </div>
           <select v-model="form.category_id" class="form-input">
             <option :value="null">Sem categoria</option>
-            <option v-for="cat in store.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+            <option v-for="cat in store.categories.filter(c => c.type === form.type)" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
           </select>
           <!-- Mini formulário de categoria -->
-          <div v-if="showCategoryForm" style="margin-top:0.75rem;padding:0.75rem;background:var(--bg-subtle);border-radius:var(--radius-sm);border:1px solid var(--border-subtle)">
+          <div v-if="showCategoryForm" style="margin-top:0.75rem;padding:0.75rem;background:var(--bg-input);border-radius:var(--radius-sm);border:1px solid var(--border-subtle)">
             <div class="form-group" style="margin-bottom:0.75rem">
               <label class="form-label">Nome da categoria</label>
               <input v-model="categoryForm.name" class="form-input" type="text" required placeholder="Ex: Energia" />
