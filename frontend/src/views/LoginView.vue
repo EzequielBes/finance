@@ -30,10 +30,10 @@ async function submit() {
 <template>
   <div class="login-bg">
     <div class="login-container animate-fade-in">
-      <div class="login-logo">
-        <span class="logo-icon">💰</span>
-        <h1>AnalisadorFinanceiro</h1>
-        <p class="text-muted text-sm">Controle total da sua vida financeira</p>
+      <div class="login-brand">
+        <div class="login-mark">Finança</div>
+        <h1 class="login-title">Bem-vindo de volta</h1>
+        <p class="login-sub text-muted">Controle total da sua vida financeira</p>
       </div>
 
       <div class="card login-card">
@@ -70,16 +70,32 @@ async function submit() {
 <style scoped>
 .login-bg {
   min-height: 100vh; display: flex; align-items: center; justify-content: center;
-  background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.15) 0%, var(--bg-primary) 70%);
+  background: radial-gradient(ellipse at 50% 20%, #241d17 0%, var(--bg-primary) 65%);
 }
-.login-container { width: 100%; max-width: 420px; padding: 1rem; display: flex; flex-direction: column; gap: 2rem; }
-.login-logo { text-align: center; }
-.logo-icon { font-size: 2.5rem; }
-.login-logo h1 { font-size: var(--font-size-2xl); font-weight: 700; margin-top: 0.5rem; }
+.login-container { width: 100%; max-width: 400px; padding: 1rem; }
+.login-brand { text-align: center; margin-bottom: 2.5rem; }
+.login-mark {
+  font-family: var(--font-sans); font-size: var(--font-size-sm); letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--accent-primary); margin-bottom: 0.625rem;
+}
+.login-title { font-family: var(--font-serif); font-size: 1.875rem; font-weight: 500; color: var(--text-primary); }
+.login-sub { font-family: var(--font-sans); font-size: var(--font-size-sm); margin-top: 0.5rem; }
 .login-card { padding: 2rem; }
-.tab-row { display: flex; background: var(--bg-input); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 1.5rem; }
-.tab-btn { flex: 1; padding: 0.5rem; border: none; background: none; color: var(--text-secondary); border-radius: 6px; cursor: pointer; font-family: var(--font-sans); font-size: var(--font-size-sm); font-weight: 500; transition: all var(--transition-fast); }
-.tab-btn.active { background: var(--accent-primary); color: white; }
+.tab-row {
+  display: flex; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-sans); font-size: var(--font-size-sm);
+}
+.tab-btn {
+  padding: 0.5rem 0; margin-right: 1.5rem; color: var(--text-muted);
+  background: none; border: none; cursor: pointer; position: relative;
+  font-family: var(--font-sans); font-size: var(--font-size-sm);
+  transition: color var(--transition-fast);
+}
+.tab-btn.active { color: var(--text-primary); }
+.tab-btn.active::after {
+  content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
+  height: 2px; background: var(--accent-primary);
+}
 .form-stack { display: flex; flex-direction: column; gap: 1rem; }
-.error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--accent-danger); padding: 0.625rem; border-radius: var(--radius-sm); font-size: var(--font-size-sm); }
+.error-msg { background: rgba(184,86,58,0.12); border: 1px solid rgba(184,86,58,0.3); color: var(--accent-danger); padding: 0.625rem; border-radius: var(--radius-sm); font-size: var(--font-size-sm); }
 </style>
