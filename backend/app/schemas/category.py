@@ -7,6 +7,7 @@ class CategoryCreate(BaseModel):
     type: CategoryType
     color: str = "#6C63FF"
     icon: str = "tag"
+    monthly_limit: float | None = None
 
 
 class CategoryUpdate(BaseModel):
@@ -14,6 +15,7 @@ class CategoryUpdate(BaseModel):
     type: CategoryType
     color: str
     icon: str
+    monthly_limit: float | None = None
 
 
 class CategoryResponse(BaseModel):
@@ -23,5 +25,7 @@ class CategoryResponse(BaseModel):
     type: CategoryType
     color: str
     icon: str
+    monthly_limit: float | None
+    current_month_usage: float = 0.0
 
     model_config = {"from_attributes": True}

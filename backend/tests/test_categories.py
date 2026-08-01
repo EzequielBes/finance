@@ -99,3 +99,37 @@ async def test_cannot_update_others_category(client):
         "name": "Hackeada", "type": "expense", "color": "#222", "icon": "skull"
     }, headers={"Authorization": f"Bearer {token_b}"})
     assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_create_category_with_monthly_limit(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    response = await client.post("/categories", json={
+        "name": "Alimentação",
+        "type": "expense",
+        "color": "#c17a54",
+        "icon": "tag",
+        "monthly_limit": 1000.0
+    }, headers=headers)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["monthly_limit"] == 1000.0
+    assert data["current_month_usage"] == 0.0
+
+
+@pytest.mark.asyncio
+async def test_update_category_monthly_limit(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    create = await client.post("/categories", json={
+        "name": "Transporte", "type": "expense", "color": "#c17a54", "icon": "tag"
+    }, headers=headers)
+    cat_id = create.json()["id"]
+    assert create.json()["monthly_limit"] is None
+
+    response = await client.put(f"/categories/{cat_id}", json={
+        "name": "Transporte", "type": "expense", "color": "#c17a54", "icon": "tag", "monthly_limit": 300.0
+    }, headers=headers)
+    assert response.status_code == 200
+    assert response.json()["monthly_limit"] == 300.0
