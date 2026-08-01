@@ -18,16 +18,13 @@ export const useCategoriesStore = defineStore('categories', () => {
 
   async function seedDefaults() {
     const { data } = await api.post('/categories/seed-defaults')
-    if (data.length) {
-      await fetchCategories()
-    }
+    await fetchCategories()
     return data
   }
 
   async function updateCategory(id, payload) {
     const { data } = await api.put(`/categories/${id}`, payload)
-    const index = items.value.findIndex((c) => c.id === id)
-    if (index !== -1) items.value[index] = data
+    await fetchCategories()
     return data
   }
 

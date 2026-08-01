@@ -27,6 +27,7 @@ const editingCategory = ref(null)
 const editForm = ref({ name: '', type: 'expense', color: '#c17a54', icon: 'tag', monthly_limit: '' })
 const editError = ref('')
 const seeding = ref(false)
+const pageError = ref('')
 
 function openEdit(category) {
   editingCategory.value = category
@@ -65,14 +66,23 @@ async function saveEdit() {
 
 async function handleSeed() {
   seeding.value = true
+  pageError.value = ''
   try {
     await store.seedDefaults()
+  } catch (e) {
+    pageError.value = e.response?.data?.detail || 'Erro ao adicionar categorias padrão'
   } finally {
     seeding.value = false
   }
 }
 
-onMounted(() => store.fetchCategories())
+onMounted(async () => {
+  try {
+    await store.fetchCategories()
+  } catch (e) {
+    pageError.value = 'Erro ao carregar categorias. Tente recarregar a página.'
+  }
+})
 </script>
 
 <template>
@@ -86,6 +96,8 @@ onMounted(() => store.fetchCategories())
         {{ seeding ? 'Adicionando...' : '+ Usar categorias padrão' }}
       </button>
     </div>
+
+    <div v-if="pageError" class="error-msg" style="margin-bottom:1.5rem">{{ pageError }}</div>
 
     <div class="card" style="margin-bottom:1.5rem">
       <h3 class="font-semibold" style="margin-bottom:1rem">Todas as categorias</h3>
