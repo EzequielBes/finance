@@ -1,9 +1,27 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import { useCategoriesStore } from '@/stores/categories'
 
 const store = useCategoriesStore()
+
+const budgetedCategories = computed(() =>
+  store.items.filter((c) => c.type === 'expense' && c.monthly_limit != null && c.monthly_limit > 0)
+)
+
+function usagePercent(cat) {
+  return Math.round((cat.current_month_usage / cat.monthly_limit) * 100)
+}
+
+function usageColorClass(percent) {
+  if (percent > 100) return 'usage-over'
+  if (percent >= 80) return 'usage-warning'
+  return 'usage-ok'
+}
+
+function formatCurrency(val) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0)
+}
 
 const editingCategory = ref(null)
 const editForm = ref({ name: '', type: 'expense', color: '#c17a54', icon: 'tag', monthly_limit: '' })
@@ -101,6 +119,31 @@ onMounted(() => store.fetchCategories())
       </table>
     </div>
 
+    <div class="card">
+      <h3 class="font-semibold" style="margin-bottom:1rem">Orçamento do mês</h3>
+      <div v-if="!budgetedCategories.length" style="text-align:center;padding:2rem;color:var(--text-muted)">
+        Nenhuma categoria com limite definido ainda. Clique em uma categoria de gasto acima para definir um limite mensal.
+      </div>
+      <div v-else class="budget-grid">
+        <div v-for="cat in budgetedCategories" :key="cat.id" class="budget-card">
+          <div class="budget-header">
+            <span class="cat-color-dot" :style="{ background: cat.color }" />
+            <span class="font-semibold text-sm">{{ cat.name }}</span>
+          </div>
+          <div class="progress-bar" style="margin:0.5rem 0">
+            <div
+              :class="['progress-fill', usageColorClass(usagePercent(cat))]"
+              :style="{ width: Math.min(usagePercent(cat), 100) + '%' }"
+            />
+          </div>
+          <div class="budget-footer text-muted text-sm">
+            <span>{{ formatCurrency(cat.current_month_usage) }} / {{ formatCurrency(cat.monthly_limit) }}</span>
+            <span :class="usageColorClass(usagePercent(cat))">{{ usagePercent(cat) }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div v-if="editingCategory" class="modal-backdrop" @click.self="closeEdit">
       <div class="card modal-content animate-fade-in">
         <h3 class="font-semibold" style="margin-bottom:1rem">Editar categoria</h3>
@@ -148,4 +191,14 @@ onMounted(() => store.fetchCategories())
   display: flex; align-items: center; justify-content: center; z-index: 100;
 }
 .modal-content { width: 100%; max-width: 420px; margin: 1rem; }
+.budget-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+.budget-card { background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 1rem; }
+.budget-header { display: flex; align-items: center; gap: 0.5rem; }
+.budget-footer { display: flex; justify-content: space-between; }
+.usage-ok { color: var(--accent-success); }
+.usage-warning { color: var(--accent-primary); }
+.usage-over { color: var(--accent-danger); }
+.progress-fill.usage-ok { background: var(--accent-success); }
+.progress-fill.usage-warning { background: var(--accent-primary); }
+.progress-fill.usage-over { background: var(--accent-danger); }
 </style>
