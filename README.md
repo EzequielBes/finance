@@ -34,3 +34,23 @@ cd backend
 source .venv/bin/activate
 pytest -v
 ```
+
+## Como rodar com Docker
+
+```bash
+docker compose up -d --build
+```
+
+- Backend: http://localhost:8000/docs
+- Frontend: http://localhost:5173
+- Dados do SQLite persistem no volume `backend_data` entre restarts.
+
+Parar:
+```bash
+docker compose down
+```
+
+Parar e apagar os dados persistidos:
+```bash
+docker compose down -v
+```
