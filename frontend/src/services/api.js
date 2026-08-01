@@ -1,4 +1,5 @@
 import axios from 'axios'
+import router from '@/router'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
@@ -14,13 +15,18 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Redirecionar para login se 401
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/register']
+
+// Redirecionar para login se 401 em uma rota autenticada (não na própria tentativa de login/registro)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isAuthEndpoint = AUTH_ENDPOINTS.some((path) => error.config?.url?.includes(path))
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('af_token')
-      window.location.href = '/login'
+      if (router.currentRoute.value.name !== 'Login') {
+        router.push('/login')
+      }
     }
     return Promise.reject(error)
   }
