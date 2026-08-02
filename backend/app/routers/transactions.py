@@ -11,7 +11,7 @@ from app.auth import get_current_user
 from app.models.user import User
 from app.models.category import Category
 from app.models.transaction import Transaction, TransactionType
-from app.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionResponse, TransactionListResponse
+from app.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionResponse, TransactionListResponse, TransactionSuggestion
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
@@ -111,6 +111,34 @@ async def list_transactions(
         .limit(per_page)
     )
     return TransactionListResponse(items=result.scalars().all(), total=total)
+
+
+@router.get("/suggestions", response_model=list[TransactionSuggestion])
+async def get_suggestions(
+    q: str = Query(..., min_length=2),
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user),
+):
+    result = await session.execute(
+        select(Transaction)
+        .where(
+            and_(
+                Transaction.user_id == current_user.id,
+                Transaction.description.ilike(f"%{q}%"),
+            )
+        )
+        .order_by(Transaction.date.desc())
+    )
+    transactions = result.scalars().all()
+
+    seen_descriptions = {}
+    for tx in transactions:
+        if tx.description not in seen_descriptions:
+            seen_descriptions[tx.description] = tx
+        if len(seen_descriptions) >= 5:
+            break
+
+    return list(seen_descriptions.values())
 
 
 @router.get("/{transaction_id}", response_model=TransactionResponse)

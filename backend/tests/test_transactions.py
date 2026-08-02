@@ -231,3 +231,93 @@ async def test_cannot_access_others_transaction(client):
     r_del = await client.delete(f"/transactions/{tx_id}", headers=headers_b)
     assert r_del.status_code == 404
 
+
+@pytest.mark.asyncio
+async def test_suggestions_returns_most_recent_per_description(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    cat_id = await get_category_id(client, headers)
+    await client.post("/transactions", json={
+        "category_id": cat_id, "description": "Mercado", "amount": 980.0,
+        "date": "2026-06-01", "type": "expense", "is_recurring": False
+    }, headers=headers)
+    await client.post("/transactions", json={
+        "category_id": cat_id, "description": "Mercado", "amount": 1200.0,
+        "date": "2026-07-15", "type": "expense", "is_recurring": False
+    }, headers=headers)
+
+    response = await client.get("/transactions/suggestions?q=merc", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["description"] == "Mercado"
+    assert data[0]["amount"] == 1200.0
+
+
+@pytest.mark.asyncio
+async def test_suggestions_case_insensitive(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    cat_id = await get_category_id(client, headers)
+    await client.post("/transactions", json={
+        "category_id": cat_id, "description": "Conta de Luz", "amount": 250.0,
+        "date": "2026-07-01", "type": "expense", "is_recurring": False
+    }, headers=headers)
+
+    response = await client.get("/transactions/suggestions?q=CONTA", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["description"] == "Conta de Luz"
+
+
+@pytest.mark.asyncio
+async def test_suggestions_limits_to_five_distinct_descriptions(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    cat_id = await get_category_id(client, headers)
+    for i in range(7):
+        await client.post("/transactions", json={
+            "category_id": cat_id, "description": f"Assinatura {i}", "amount": 10.0 + i,
+            "date": "2026-07-01", "type": "expense", "is_recurring": False
+        }, headers=headers)
+
+    response = await client.get("/transactions/suggestions?q=assinatura", headers=headers)
+    assert response.status_code == 200
+    assert len(response.json()) == 5
+
+
+@pytest.mark.asyncio
+async def test_suggestions_only_own_transactions(client):
+    token_a = await register_and_login(client)
+    headers_a = {"Authorization": f"Bearer {token_a}"}
+    cat_id_a = await get_category_id(client, headers_a)
+    await client.post("/transactions", json={
+        "category_id": cat_id_a, "description": "Aluguel", "amount": 1200.0,
+        "date": "2026-07-01", "type": "expense", "is_recurring": False
+    }, headers=headers_a)
+
+    token_b = await register_and_login(client, email="userb@email.com", name="User B", password="senhaB999")
+    headers_b = {"Authorization": f"Bearer {token_b}"}
+
+    response = await client.get("/transactions/suggestions?q=aluguel", headers=headers_b)
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+@pytest.mark.asyncio
+async def test_suggestions_requires_min_two_chars(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    response = await client.get("/transactions/suggestions?q=a", headers=headers)
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_suggestions_route_does_not_collide_with_transaction_id(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    response = await client.get("/transactions/suggestions?q=xx", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == []
+

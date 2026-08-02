@@ -43,3 +43,12 @@ class TransactionResponse(BaseModel):
 class TransactionListResponse(BaseModel):
     items: list[TransactionResponse]
     total: int
+
+
+class TransactionSuggestion(BaseModel):
+    description: str
+    amount: float
+    category_id: Optional[int]
+    type: TransactionType
+
+    model_config = {"from_attributes": True}
