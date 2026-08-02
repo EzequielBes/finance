@@ -20,6 +20,32 @@ const categoryForm = ref({
 const error = ref('')
 const categoryError = ref('')
 
+const suggestions = ref([])
+const showSuggestions = ref(false)
+let debounceTimer = null
+
+watch(() => form.value.description, (newVal) => {
+  clearTimeout(debounceTimer)
+  if (!newVal || newVal.length < 2) {
+    suggestions.value = []
+    showSuggestions.value = false
+    return
+  }
+  debounceTimer = setTimeout(async () => {
+    suggestions.value = await store.fetchSuggestions(newVal)
+    showSuggestions.value = suggestions.value.length > 0
+  }, 300)
+})
+
+function applySuggestion(suggestion) {
+  form.value.description = suggestion.description
+  form.value.amount = suggestion.amount
+  form.value.category_id = suggestion.category_id
+  form.value.type = suggestion.type
+  showSuggestions.value = false
+  suggestions.value = []
+}
+
 watch(() => form.value.is_recurring, (isRecurring) => {
   if (isRecurring) {
     form.value.installments_total = null
@@ -96,9 +122,22 @@ onMounted(async () => {
     <div v-if="showForm" class="card animate-fade-in" style="margin-bottom:1.5rem">
       <h3 class="font-semibold" style="margin-bottom:1rem">Nova transação</h3>
       <form @submit.prevent="submit" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-        <div class="form-group" style="grid-column:1/-1">
+        <div class="form-group" style="grid-column:1/-1;position:relative">
           <label class="form-label">Descrição</label>
-          <input v-model="form.description" class="form-input" required placeholder="Ex: Conta de luz" />
+          <input
+            v-model="form.description" class="form-input" required placeholder="Ex: Conta de luz"
+            @focus="showSuggestions = suggestions.length > 0"
+            @blur="setTimeout(() => showSuggestions = false, 150)"
+          />
+          <div v-if="showSuggestions" class="suggestions-dropdown">
+            <div
+              v-for="(s, i) in suggestions" :key="i"
+              class="suggestion-item"
+              @mousedown.prevent="applySuggestion(s)"
+            >
+              {{ s.description }} — {{ formatCurrency(s.amount) }}
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Valor (R$)</label>
@@ -222,4 +261,16 @@ onMounted(async () => {
 .tx-table th { text-align: left; padding: 0.5rem 0.75rem; font-size: var(--font-size-xs); color: var(--text-muted); font-weight: 600; border-bottom: 1px solid var(--border-subtle); }
 .tx-table td { padding: 0.75rem; border-bottom: 1px solid var(--border-subtle); font-size: var(--font-size-sm); }
 .tx-table tr:last-child td { border-bottom: none; }
+.suggestions-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 10;
+  background: var(--bg-input); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm); margin-top: 0.25rem;
+  max-height: 220px; overflow-y: auto;
+}
+.suggestion-item {
+  padding: 0.625rem 0.875rem; font-size: var(--font-size-sm); cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.suggestion-item:hover { background: var(--bg-card-hover); }
+.suggestion-item:not(:last-child) { border-bottom: 1px solid var(--border-subtle); }
 </style>
