@@ -23,9 +23,14 @@ const categoryError = ref('')
 const suggestions = ref([])
 const showSuggestions = ref(false)
 let debounceTimer = null
+let suppressNextSearch = false
 
 watch(() => form.value.description, (newVal) => {
   clearTimeout(debounceTimer)
+  if (suppressNextSearch) {
+    suppressNextSearch = false
+    return
+  }
   if (!newVal || newVal.length < 2) {
     suggestions.value = []
     showSuggestions.value = false
@@ -38,12 +43,17 @@ watch(() => form.value.description, (newVal) => {
 })
 
 function applySuggestion(suggestion) {
+  suppressNextSearch = true
   form.value.description = suggestion.description
   form.value.amount = suggestion.amount
   form.value.category_id = suggestion.category_id
   form.value.type = suggestion.type
   showSuggestions.value = false
   suggestions.value = []
+}
+
+function hideSuggestionsDelayed() {
+  setTimeout(() => { showSuggestions.value = false }, 150)
 }
 
 watch(() => form.value.is_recurring, (isRecurring) => {
@@ -127,7 +137,7 @@ onMounted(async () => {
           <input
             v-model="form.description" class="form-input" required placeholder="Ex: Conta de luz"
             @focus="showSuggestions = suggestions.length > 0"
-            @blur="setTimeout(() => showSuggestions = false, 150)"
+            @blur="hideSuggestionsDelayed"
           />
           <div v-if="showSuggestions" class="suggestions-dropdown">
             <div
