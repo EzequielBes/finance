@@ -24,6 +24,11 @@ export const useTransactionsStore = defineStore('transactions', () => {
     categories.value = data
   }
 
+  async function fetchSuggestions(query) {
+    const { data } = await api.get('/transactions/suggestions', { params: { q: query } })
+    return data
+  }
+
   async function createTransaction(payload) {
     await api.post('/transactions', payload)
   }
@@ -38,5 +43,5 @@ export const useTransactionsStore = defineStore('transactions', () => {
     return data
   }
 
-  return { items, total, categories, loading, fetchTransactions, fetchCategories, createTransaction, deleteTransaction, createCategory }
+  return { items, total, categories, loading, fetchTransactions, fetchCategories, createTransaction, deleteTransaction, createCategory, fetchSuggestions }
 })
