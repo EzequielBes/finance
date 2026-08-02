@@ -13,6 +13,8 @@ export default defineConfig({
         name: 'AnalisadorFinanceiro (Local)',
         short_name: 'AF Local',
         description: 'Controle financeiro pessoal, 100% local no dispositivo.',
+        lang: 'pt-BR',
+        dir: 'ltr',
         theme_color: '#1a1613',
         background_color: '#1a1613',
         display: 'standalone',
@@ -38,5 +40,9 @@ export default defineConfig({
   },
   server: {
     port: 5174,
+  },
+  preview: {
+    port: 4173,
+    host: true,
   },
 })
