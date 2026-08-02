@@ -10,6 +10,10 @@ db.version(1).stores({
   planContributions: '++id, plan_id, date',
 })
 
+db.version(2).stores({
+  transactions: '++id, category_id, date, type, installment_group_id, description',
+})
+
 export function getDbInfo() {
   return {
     name: db.name,
