@@ -1,4 +1,6 @@
 .superpowers/
+docs/superpowers/
+graphify-out/
 .venv/
 *.db
 __pycache__/
