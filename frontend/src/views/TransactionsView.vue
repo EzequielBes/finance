@@ -37,13 +37,18 @@ watch(() => form.value.description, (newVal) => {
     return
   }
   debounceTimer = setTimeout(async () => {
-    suggestions.value = await store.fetchSuggestions(newVal)
-    showSuggestions.value = suggestions.value.length > 0
+    try {
+      suggestions.value = await store.fetchSuggestions(newVal)
+      showSuggestions.value = suggestions.value.length > 0
+    } catch {
+      suggestions.value = []
+      showSuggestions.value = false
+    }
   }, 300)
 })
 
 function applySuggestion(suggestion) {
-  suppressNextSearch = true
+  suppressNextSearch = suggestion.description !== form.value.description
   form.value.description = suggestion.description
   form.value.amount = suggestion.amount
   form.value.category_id = suggestion.category_id

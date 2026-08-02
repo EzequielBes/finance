@@ -255,6 +255,28 @@ async def test_suggestions_returns_most_recent_per_description(client):
 
 
 @pytest.mark.asyncio
+async def test_suggestions_same_day_tie_break_uses_most_recently_created(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    cat_id = await get_category_id(client, headers)
+    await client.post("/transactions", json={
+        "category_id": cat_id, "description": "Mercado", "amount": 980.0,
+        "date": "2026-07-15", "type": "expense", "is_recurring": False
+    }, headers=headers)
+    await client.post("/transactions", json={
+        "category_id": cat_id, "description": "Mercado", "amount": 1200.0,
+        "date": "2026-07-15", "type": "expense", "is_recurring": False
+    }, headers=headers)
+
+    response = await client.get("/transactions/suggestions?q=merc", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["description"] == "Mercado"
+    assert data[0]["amount"] == 1200.0
+
+
+@pytest.mark.asyncio
 async def test_suggestions_case_insensitive(client):
     token = await register_and_login(client)
     headers = {"Authorization": f"Bearer {token}"}

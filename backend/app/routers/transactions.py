@@ -127,7 +127,7 @@ async def get_suggestions(
                 Transaction.description.ilike(f"%{q}%"),
             )
         )
-        .order_by(Transaction.date.desc())
+        .order_by(Transaction.date.desc(), Transaction.id.desc())
     )
     transactions = result.scalars().all()
 
