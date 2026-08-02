@@ -1,9 +1,10 @@
 <script setup>
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import { useReportsStore } from '@/stores/reports'
 
 const store = useReportsStore()
+const pageError = ref('')
 
 function formatCurrency(val) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0)
@@ -15,7 +16,13 @@ function usageColorClass(percent) {
   return 'usage-ok'
 }
 
-onMounted(() => store.fetchSavingsAnalysis())
+onMounted(async () => {
+  try {
+    await store.fetchSavingsAnalysis()
+  } catch (e) {
+    pageError.value = 'Não foi possível carregar a análise. Tente recarregar a página.'
+  }
+})
 </script>
 
 <template>
@@ -24,6 +31,8 @@ onMounted(() => store.fetchSavingsAnalysis())
       <h1 class="page-title">Relatórios</h1>
       <p class="page-subtitle">Análise de onde você pode economizar este mês</p>
     </div>
+
+    <div v-if="pageError" class="error-msg" style="margin-bottom:1.5rem">{{ pageError }}</div>
 
     <div class="card">
       <div v-if="store.loading" style="text-align:center;padding:2rem;color:var(--text-muted)">Carregando...</div>
@@ -48,7 +57,7 @@ onMounted(() => store.fetchSavingsAnalysis())
               ({{ item.reference_source === 'limit' ? 'limite' : 'média histórica' }})</span>
             <span :class="usageColorClass(item.percent)">{{ item.percent }}%</span>
           </div>
-          <div v-if="item.suggested_cut" class="suggested-cut">
+          <div v-if="item.suggested_cut !== null" class="suggested-cut">
             Sugestão: economize {{ formatCurrency(item.suggested_cut) }} nesta categoria
           </div>
           <div v-else-if="item.is_essential" class="essential-notice text-muted text-sm">

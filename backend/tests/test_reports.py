@@ -108,6 +108,33 @@ async def test_savings_analysis_ordered_by_largest_overage_first(client):
 
 
 @pytest.mark.asyncio
+async def test_savings_analysis_excludes_income_transactions_from_usage(client):
+    token = await register_and_login(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    cat = await client.post("/categories", json={
+        "name": "Compras", "type": "expense", "color": "#7a9b7e", "icon": "wallet", "monthly_limit": 500.0
+    }, headers=headers)
+    cat_id = cat.json()["id"]
+    await client.post("/transactions", json={
+        "category_id": cat_id, "description": "Roupas", "amount": 450.0,
+        "date": date.today().isoformat(), "type": "expense", "is_recurring": False
+    }, headers=headers)
+    # Refund posted as income against the same expense category — must not
+    # count toward current-month usage.
+    await client.post("/transactions", json={
+        "category_id": cat_id, "description": "Estorno", "amount": 9999.0,
+        "date": date.today().isoformat(), "type": "income", "is_recurring": False
+    }, headers=headers)
+
+    response = await client.get("/reports/savings-analysis", headers=headers)
+    assert response.status_code == 200
+    item = next((i for i in response.json() if i["category_name"] == "Compras"), None)
+    assert item is not None
+    assert item["current_amount"] == 450.0
+    assert item["suggested_cut"] is None
+
+
+@pytest.mark.asyncio
 async def test_savings_analysis_only_own_categories(client):
     token_a = await register_and_login(client)
     headers_a = {"Authorization": f"Bearer {token_a}"}

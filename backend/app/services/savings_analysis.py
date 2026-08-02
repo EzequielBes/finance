@@ -31,6 +31,7 @@ async def get_category_reference(
             and_(
                 Transaction.user_id == user_id,
                 Transaction.category_id == category.id,
+                Transaction.type == "expense",
                 Transaction.date >= three_months_back_start,
                 Transaction.date < current_month_start,
             )
@@ -60,6 +61,7 @@ async def build_savings_analysis(session: AsyncSession, user_id: int) -> list[Sa
         .where(
             and_(
                 Transaction.user_id == user_id,
+                Transaction.type == "expense",
                 Transaction.date >= month_start,
                 Transaction.date <= today,
             )
