@@ -100,8 +100,9 @@ export async function getSuggestions(query) {
   })
   const seen = new Map()
   for (const tx of all) {
-    if (!seen.has(tx.description)) {
-      seen.set(tx.description, { description: tx.description, amount: tx.amount, category_id: tx.category_id, type: tx.type })
+    const key = tx.description.toLowerCase()
+    if (!seen.has(key)) {
+      seen.set(key, { description: tx.description, amount: tx.amount, category_id: tx.category_id, type: tx.type })
     }
     if (seen.size >= 5) break
   }
