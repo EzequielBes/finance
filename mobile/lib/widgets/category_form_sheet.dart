@@ -55,7 +55,12 @@ Future<void> showCategoryFormSheet(BuildContext context, WidgetRef ref, {Categor
                   items: CategoryType.values
                       .map((t) => DropdownMenuItem(value: t, child: Text(t == CategoryType.expense ? 'Despesa' : 'Receita')))
                       .toList(),
-                  onChanged: (v) => setState(() => type = v!),
+                  // CategoriesRepository.update() has no `type` parameter, so type is
+                  // immutable after creation. Keep the dropdown read-only (onChanged: null)
+                  // when editing so it never visually suggests a change that won't be
+                  // saved — and so the monthly-limit visibility guard below, which reads
+                  // this same `type` variable, can't diverge from what actually persists.
+                  onChanged: existing == null ? (v) => setState(() => type = v!) : null,
                 ),
                 if (type == CategoryType.expense) ...[
                   const SizedBox(height: 20),
