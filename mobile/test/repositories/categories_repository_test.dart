@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/data/database.dart';
@@ -184,5 +184,20 @@ void main() {
     final updated = await (db.select(db.categories)..where((c) => c.id.equals(catId))).getSingle();
     expect(updated.name, 'Novo nome');
     expect(updated.monthlyLimit, 500.0);
+  });
+
+  test('update with monthlyLimit Value(null) explicitly clears the existing limit', () async {
+    final catId = await repo.create(
+      name: 'Lazer',
+      type: CategoryType.expense,
+      color: '#c17a54',
+      icon: 'tag',
+      monthlyLimit: 400.0,
+    );
+
+    await repo.update(catId, monthlyLimit: const Value(null));
+
+    final updated = await (db.select(db.categories)..where((c) => c.id.equals(catId))).getSingle();
+    expect(updated.monthlyLimit, isNull);
   });
 }

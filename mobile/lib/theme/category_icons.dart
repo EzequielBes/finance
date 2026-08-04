@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 
+const _iconMap = {
+  'bank': Icons.account_balance_outlined,
+  'tag': Icons.local_offer_outlined,
+  'transactions': Icons.swap_horiz,
+  'wallet': Icons.account_balance_wallet_outlined,
+  'trending-up': Icons.trending_up,
+  'health': Icons.favorite_outline,
+  'education': Icons.school_outlined,
+  'leisure': Icons.sports_esports_outlined,
+  'food': Icons.restaurant_outlined,
+  'transport': Icons.directions_car_outlined,
+  'home': Icons.home_outlined,
+  'shopping': Icons.shopping_bag_outlined,
+};
+
 IconData categoryIconFor(String? iconKey) {
-  switch (iconKey) {
-    case 'bank':
-      return Icons.account_balance_outlined;
-    case 'tag':
-      return Icons.local_offer_outlined;
-    case 'transactions':
-      return Icons.swap_horiz;
-    case 'wallet':
-      return Icons.account_balance_wallet_outlined;
-    case 'trending-up':
-      return Icons.trending_up;
-    default:
-      return Icons.label_outline;
-  }
+  return _iconMap[iconKey] ?? Icons.label_outline;
 }
+
+List<String> availableIconKeys() => _iconMap.keys.toList();

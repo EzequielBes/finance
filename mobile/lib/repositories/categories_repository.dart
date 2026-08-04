@@ -72,14 +72,14 @@ class CategoriesRepository {
     String? name,
     String? color,
     String? icon,
-    double? monthlyLimit,
+    Value<double?> monthlyLimit = const Value.absent(),
   }) {
     return (db.update(db.categories)..where((c) => c.id.equals(id))).write(
       CategoriesCompanion(
         name: name != null ? Value(name) : const Value.absent(),
         color: color != null ? Value(color) : const Value.absent(),
         icon: icon != null ? Value(icon) : const Value.absent(),
-        monthlyLimit: monthlyLimit != null ? Value(monthlyLimit) : const Value.absent(),
+        monthlyLimit: monthlyLimit,
         updatedAt: Value(DateTime.now()),
       ),
     );
