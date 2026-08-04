@@ -9,38 +9,40 @@ Future<void> showCategoryFormSheet(BuildContext context, WidgetRef ref, {Categor
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    builder: (ctx) => Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(ctx).viewInsets.bottom,
-        left: 16,
-        right: 16,
-        top: 16,
-      ),
-      child: StatefulBuilder(
-        builder: (ctx, setState) => Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nome')),
-            DropdownButton<CategoryType>(
-              value: type,
-              items: CategoryType.values
-                  .map((t) => DropdownMenuItem(value: t, child: Text(t == CategoryType.expense ? 'Despesa' : 'Receita')))
-                  .toList(),
-              onChanged: (v) => setState(() => type = v!),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final repo = ref.read(categoriesRepositoryProvider);
-                if (existing == null) {
-                  await repo.create(name: nameController.text, type: type, color: '#c17a54', icon: 'tag');
-                } else {
-                  await repo.update(existing.id, name: nameController.text);
-                }
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
-              child: const Text('Salvar'),
-            ),
-          ],
+    builder: (ctx) => SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom,
+          left: 16,
+          right: 16,
+          top: 16,
+        ),
+        child: StatefulBuilder(
+          builder: (ctx, setState) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nome')),
+              DropdownButton<CategoryType>(
+                value: type,
+                items: CategoryType.values
+                    .map((t) => DropdownMenuItem(value: t, child: Text(t == CategoryType.expense ? 'Despesa' : 'Receita')))
+                    .toList(),
+                onChanged: (v) => setState(() => type = v!),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final repo = ref.read(categoriesRepositoryProvider);
+                  if (existing == null) {
+                    await repo.create(name: nameController.text, type: type, color: '#c17a54', icon: 'tag');
+                  } else {
+                    await repo.update(existing.id, name: nameController.text);
+                  }
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: const Text('Salvar'),
+              ),
+            ],
+          ),
         ),
       ),
     ),
