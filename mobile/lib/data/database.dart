@@ -9,6 +9,8 @@ part 'database.g.dart';
 enum CategoryType { expense, income }
 enum TransactionType { expense, income }
 enum RecurrencePeriod { monthly, weekly, yearly }
+enum PlanStatus { active, paused, cancelled, completed }
+enum ContributionType { deposit, withdrawal }
 
 class Categories extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -49,12 +51,52 @@ class IncomeEntries extends Table {
   DateTimeColumn get updatedAt => dateTime()();
 }
 
-@DriftDatabase(tables: [Categories, Transactions, IncomeEntries])
+class Plans extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get parentPlanId => integer().nullable().references(Plans, #id)();
+  TextColumn get name => text()();
+  TextColumn get description => text().nullable()();
+  RealColumn get targetAmount => real()();
+  RealColumn get currentSavings => real().withDefault(const Constant(0.0))();
+  RealColumn get monthlyContribution => real()();
+  DateTimeColumn get deadline => dateTime().nullable()();
+  TextColumn get status => textEnum<PlanStatus>().withDefault(Constant(PlanStatus.active.name))();
+  IntColumn get priority => integer().withDefault(const Constant(1))();
+  TextColumn get color => text()();
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+}
+
+class PlanContributions extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get planId => integer().references(Plans, #id)();
+  RealColumn get amount => real()();
+  TextColumn get type => textEnum<ContributionType>()();
+  DateTimeColumn get date => dateTime()();
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+}
+
+@DriftDatabase(tables: [Categories, Transactions, IncomeEntries, Plans, PlanContributions])
 class AppDatabase extends _$AppDatabase {
   AppDatabase({QueryExecutor? executor}) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) async {
+          await m.createAll();
+        },
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.createTable(plans);
+            await m.createTable(planContributions);
+          }
+        },
+      );
 
   static QueryExecutor _openConnection() {
     return LazyDatabase(() async {

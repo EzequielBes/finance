@@ -72,4 +72,58 @@ void main() {
     expect(rows.length, 1);
     expect(rows.first.source, 'Salário');
   });
+
+  test('inserts a plan and a contribution', () async {
+    final planId = await db.into(db.plans).insert(
+      PlansCompanion.insert(
+        name: 'Viagem Japão',
+        targetAmount: 10000.0,
+        monthlyContribution: 3000.0,
+        color: '#c17a54',
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+      ),
+    );
+    await db.into(db.planContributions).insert(
+      PlanContributionsCompanion.insert(
+        planId: planId,
+        amount: 500.0,
+        type: ContributionType.deposit,
+        date: DateTime(2026, 1, 5),
+        createdAt: DateTime(2026, 1, 5),
+      ),
+    );
+    final plan = await (db.select(db.plans)..where((p) => p.id.equals(planId))).getSingle();
+    expect(plan.name, 'Viagem Japão');
+    expect(plan.currentSavings, 0.0);
+    final contributions = await db.select(db.planContributions).get();
+    expect(contributions.length, 1);
+    expect(contributions.first.type, ContributionType.deposit);
+  });
+
+  test('sub-plan references parent plan', () async {
+    final parentId = await db.into(db.plans).insert(
+      PlansCompanion.insert(
+        name: 'Pai',
+        targetAmount: 10000.0,
+        monthlyContribution: 1000.0,
+        color: '#c17a54',
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+      ),
+    );
+    final subId = await db.into(db.plans).insert(
+      PlansCompanion.insert(
+        name: 'Sub',
+        parentPlanId: Value(parentId),
+        targetAmount: 2000.0,
+        monthlyContribution: 200.0,
+        color: '#7a9b7e',
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+      ),
+    );
+    final sub = await (db.select(db.plans)..where((p) => p.id.equals(subId))).getSingle();
+    expect(sub.parentPlanId, parentId);
+  });
 }
