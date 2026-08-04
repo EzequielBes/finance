@@ -41,4 +41,20 @@ void main() {
     expect(summary.totalThisMonth, 100);
     expect(summary.averageLast3Months, closeTo(200.0, 0.01));
   });
+
+  test('update without notes leaves existing notes unchanged', () async {
+    await repo.create(
+      amount: 1000,
+      date: DateTime(2026, 1, 5),
+      source: 'Salário',
+      notes: 'Pagamento mensal',
+    );
+    final created = (await repo.watchList()).first;
+
+    await repo.update(created.id, amount: 999);
+
+    final updated = (await repo.watchList()).first;
+    expect(updated.amount, 999);
+    expect(updated.notes, 'Pagamento mensal');
+  });
 }

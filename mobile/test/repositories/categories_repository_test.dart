@@ -129,4 +129,20 @@ void main() {
     final target = results.firstWhere((c) => c.category.id == catId);
     expect(target.currentMonthUsage, 50.0);
   });
+
+  test('update without monthlyLimit leaves existing monthlyLimit unchanged', () async {
+    final catId = await repo.create(
+      name: 'Lazer',
+      type: CategoryType.expense,
+      color: '#c17a54',
+      icon: 'tag',
+      monthlyLimit: 500.0,
+    );
+
+    await repo.update(catId, name: 'Novo nome');
+
+    final updated = await (db.select(db.categories)..where((c) => c.id.equals(catId))).getSingle();
+    expect(updated.name, 'Novo nome');
+    expect(updated.monthlyLimit, 500.0);
+  });
 }

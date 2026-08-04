@@ -78,7 +78,7 @@ class CategoriesRepository {
         name: name != null ? Value(name) : const Value.absent(),
         color: color != null ? Value(color) : const Value.absent(),
         icon: icon != null ? Value(icon) : const Value.absent(),
-        monthlyLimit: Value(monthlyLimit),
+        monthlyLimit: monthlyLimit != null ? Value(monthlyLimit) : const Value.absent(),
         updatedAt: Value(DateTime.now()),
       ),
     );
