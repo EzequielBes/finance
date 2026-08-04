@@ -103,6 +103,7 @@ class _IncomeCardState extends State<_IncomeCard> {
         _longPressTimer = Timer(const Duration(milliseconds: 1500), widget.onTapEdit);
       },
       onLongPressEnd: (_) => _longPressTimer?.cancel(),
+      onLongPressCancel: () => _longPressTimer?.cancel(),
       child: Container(
         decoration: BoxDecoration(color: AppColors.bgCard, borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.symmetric(vertical: 4),
@@ -116,7 +117,7 @@ class _IncomeCardState extends State<_IncomeCard> {
                   Text(e.source),
                   Text(
                     '${e.date.day}/${e.date.month}/${e.date.year}',
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 12),
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                   ),
                 ],
               ),

@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
@@ -118,7 +119,7 @@ Future<void> showTransactionFormSheet(
                             description: descController.text,
                             amount: amount,
                             date: date,
-                            categoryId: categoryId,
+                            categoryId: Value(categoryId),
                           );
                         }
                         if (ctx.mounted) Navigator.pop(ctx);

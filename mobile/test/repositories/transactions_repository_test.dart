@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/data/database.dart';
@@ -94,6 +95,22 @@ void main() {
     final updated = await (db.select(db.transactions)..where((t) => t.id.equals(created.id))).getSingle();
     expect(updated.description, 'new desc');
     expect(updated.categoryId, 7);
+  });
+
+  test('update with categoryId Value(null) explicitly clears the existing categoryId', () async {
+    await repo.create(
+      description: 'Original',
+      amount: 50.0,
+      date: DateTime(2026, 1, 5),
+      type: TransactionType.expense,
+      categoryId: 7,
+    );
+    final created = (await db.select(db.transactions).get()).first;
+
+    await repo.update(created.id, categoryId: const Value(null));
+
+    final updated = await (db.select(db.transactions)..where((t) => t.id.equals(created.id))).getSingle();
+    expect(updated.categoryId, isNull);
   });
 
   test('remove deletes the transaction from the table', () async {

@@ -100,6 +100,7 @@ class _TransactionCardState extends State<TransactionCard> {
           onTap: group.isInstallmentGroup ? () => setState(() => _expanded = !_expanded) : null,
           onLongPressStart: _handleLongPressStart,
           onLongPressEnd: _handleLongPressEnd,
+          onLongPressCancel: () => _longPressTimer?.cancel(),
           child: Container(
             decoration: BoxDecoration(
               color: AppColors.bgCard,
@@ -147,7 +148,7 @@ class _TransactionCardState extends State<TransactionCard> {
                         category != null
                             ? '${category.name} · ${current.date.day}/${current.date.month}'
                             : '${current.date.day}/${current.date.month}',
-                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 12),
+                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                       ),
                     ],
                   ),
@@ -178,7 +179,7 @@ class _TransactionCardState extends State<TransactionCard> {
                 final isCurrent = t == current;
                 final statusColor = isCurrent
                     ? AppColors.accentPrimary
-                    : (isPaid ? AppColors.accentSuccess : AppColors.textPrimary);
+                    : (isPaid ? AppColors.accentSuccess : AppColors.textSecondary);
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(

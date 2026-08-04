@@ -59,14 +59,14 @@ class TransactionsRepository {
     String? description,
     double? amount,
     DateTime? date,
-    int? categoryId,
+    Value<int?> categoryId = const Value.absent(),
   }) {
     return (db.update(db.transactions)..where((t) => t.id.equals(id))).write(
       TransactionsCompanion(
         description: description != null ? Value(description) : const Value.absent(),
         amount: amount != null ? Value(amount) : const Value.absent(),
         date: date != null ? Value(date) : const Value.absent(),
-        categoryId: categoryId != null ? Value(categoryId) : const Value.absent(),
+        categoryId: categoryId,
         updatedAt: Value(DateTime.now()),
       ),
     );

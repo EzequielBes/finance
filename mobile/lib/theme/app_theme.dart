@@ -7,6 +7,7 @@ class AppColors {
   static const bgCardHover = Color(0xFF23201B);
   static const bgInput = Color(0xFF17130F);
   static const textPrimary = Color(0xFFEDE6DC);
+  static const textSecondary = Color(0xFF9A8F82);
   static const accentPrimary = Color(0xFFC17A54);
   static const accentSuccess = Color(0xFF7A9B7E);
   static const accentWarning = Color(0xFFC17A54);
