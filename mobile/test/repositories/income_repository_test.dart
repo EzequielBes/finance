@@ -1,0 +1,44 @@
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile/data/database.dart';
+import 'package:mobile/repositories/income_repository.dart';
+
+void main() {
+  late AppDatabase db;
+  late IncomeRepository repo;
+
+  setUp(() {
+    db = AppDatabase(executor: NativeDatabase.memory());
+    repo = IncomeRepository(db);
+  });
+
+  tearDown(() async => db.close());
+
+  test('create and watchList filters by month/year', () async {
+    await repo.create(amount: 3000, date: DateTime(2026, 1, 5), source: 'Salário');
+    await repo.create(amount: 500, date: DateTime(2026, 2, 5), source: 'Freelance');
+    final jan = await repo.watchList(month: 1, year: 2026);
+    expect(jan.length, 1);
+    expect(jan.first.source, 'Salário');
+  });
+
+  test('remove deletes entry', () async {
+    await repo.create(amount: 100, date: DateTime(2026, 1, 1), source: 'Extra');
+    final all = await repo.watchList();
+    await repo.remove(all.first.id);
+    final afterRemove = await repo.watchList();
+    expect(afterRemove.length, 0);
+  });
+
+  test('getSummary computes average of last 3 months and total this month', () async {
+    final now = DateTime.now();
+    await repo.create(amount: 100, date: now, source: 'A');
+    await repo.create(amount: 200, date: now.subtract(const Duration(days: 35)), source: 'B');
+    await repo.create(amount: 300, date: now.subtract(const Duration(days: 65)), source: 'C');
+    await repo.create(amount: 999, date: now.subtract(const Duration(days: 200)), source: 'Old');
+
+    final summary = await repo.getSummary();
+    expect(summary.totalThisMonth, 100);
+    expect(summary.averageLast3Months, closeTo(200.0, 0.01));
+  });
+}
