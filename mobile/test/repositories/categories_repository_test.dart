@@ -30,6 +30,9 @@ void main() {
 
   test('watchAll computes currentMonthUsage summing expense transactions this month', () async {
     final now = DateTime.now();
+    // Day 1 of the current month is always <= today, so these fixture
+    // dates are safe regardless of which day of the month the suite runs on.
+    final monthStart = DateTime(now.year, now.month, 1);
     final catId = await repo.create(
       name: 'Alimentação',
       type: CategoryType.expense,
@@ -41,7 +44,7 @@ void main() {
         categoryId: Value(catId),
         description: 'Mercado',
         amount: 150.0,
-        date: DateTime(now.year, now.month, 5),
+        date: monthStart,
         type: TransactionType.expense,
         createdAt: now,
         updatedAt: now,
@@ -52,7 +55,7 @@ void main() {
         categoryId: Value(catId),
         description: 'Restaurante',
         amount: 80.0,
-        date: DateTime(now.year, now.month, 10),
+        date: monthStart,
         type: TransactionType.expense,
         createdAt: now,
         updatedAt: now,
@@ -74,5 +77,56 @@ void main() {
     final results = await repo.watchAll().first;
     final target = results.firstWhere((c) => c.category.id == catId);
     expect(target.currentMonthUsage, 230.0);
+  });
+
+  test('watchAll excludes future-dated transactions within the current month', () async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0).day;
+
+    // Only run when there's room for a "later this month" date after today.
+    if (today.day >= lastDayOfMonth) {
+      // Near/at month-end: no valid future-in-month date exists to test.
+      return;
+    }
+
+    final futureDay = (today.day + 10) <= lastDayOfMonth ? today.day + 10 : lastDayOfMonth;
+    final futureDate = DateTime(now.year, now.month, futureDay);
+
+    final catId = await repo.create(
+      name: 'Lazer',
+      type: CategoryType.expense,
+      color: '#c17a54',
+      icon: 'tag',
+    );
+    // Transação de hoje, deve contar.
+    await db.into(db.transactions).insert(
+      TransactionsCompanion.insert(
+        categoryId: Value(catId),
+        description: 'Hoje',
+        amount: 50.0,
+        date: today,
+        type: TransactionType.expense,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    // Transação futura, mesmo mês: NÃO deve contar (paridade com o backend,
+    // que filtra Transaction.date <= today).
+    await db.into(db.transactions).insert(
+      TransactionsCompanion.insert(
+        categoryId: Value(catId),
+        description: 'Futura',
+        amount: 500.0,
+        date: futureDate,
+        type: TransactionType.expense,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+
+    final results = await repo.watchAll().first;
+    final target = results.firstWhere((c) => c.category.id == catId);
+    expect(target.currentMonthUsage, 50.0);
   });
 }

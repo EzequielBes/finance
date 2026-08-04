@@ -88,7 +88,11 @@ class CategoriesRepository {
     return db.select(db.categories).watch().asyncMap((cats) async {
       final now = DateTime.now();
       final monthStart = DateTime(now.year, now.month, 1);
-      final monthEnd = DateTime(now.year, now.month + 1, 1);
+      // Exclusive upper bound = start of tomorrow, so the range covers
+      // "month-to-date" (day 1 of this month through end of today),
+      // matching the backend's `Transaction.date <= today` rule while
+      // avoiding clock-time-of-day exclusion issues for same-day txs.
+      final todayEnd = DateTime(now.year, now.month, now.day + 1);
       final result = <CategoryWithUsage>[];
       for (final cat in cats) {
         final txs = await (db.select(db.transactions)
@@ -96,7 +100,7 @@ class CategoriesRepository {
                   t.categoryId.equals(cat.id) &
                   t.type.equalsValue(TransactionType.expense) &
                   t.date.isBiggerOrEqualValue(monthStart) &
-                  t.date.isSmallerThanValue(monthEnd)))
+                  t.date.isSmallerThanValue(todayEnd)))
             .get();
         final usage = txs.fold<double>(0.0, (sum, t) => sum + t.amount);
         result.add(CategoryWithUsage(cat, usage));
