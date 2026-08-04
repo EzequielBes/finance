@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/income_provider.dart';
+import 'package:mobile/theme/app_theme.dart';
 import 'package:mobile/widgets/income_form_sheet.dart';
 
 class IncomeScreen extends ConsumerStatefulWidget {
@@ -38,22 +41,92 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
         child: const Icon(Icons.add),
       ),
       body: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         itemCount: _items.length,
         itemBuilder: (ctx, i) {
           final e = _items[i];
-          return Dismissible(
+          return Slidable(
             key: ValueKey(e.id),
-            onDismissed: (_) async {
-              await ref.read(incomeRepositoryProvider).remove(e.id);
-              _load();
-            },
-            child: ListTile(
-              title: Text(e.source),
-              subtitle: Text('${e.date.day}/${e.date.month}/${e.date.year}'),
-              trailing: Text('R\$${e.amount.toStringAsFixed(2)}'),
+            endActionPane: ActionPane(
+              motion: const DrawerMotion(),
+              children: [
+                SlidableAction(
+                  onPressed: (_) async {
+                    await ref.read(incomeRepositoryProvider).remove(e.id);
+                    _load();
+                  },
+                  backgroundColor: AppColors.accentDanger,
+                  foregroundColor: Colors.white,
+                  icon: Icons.delete_outline,
+                  label: 'Excluir',
+                ),
+              ],
+            ),
+            child: _IncomeCard(
+              entry: e,
+              onTapEdit: () async {
+                await showIncomeFormSheet(context, ref, existing: e);
+                _load();
+              },
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _IncomeCard extends StatefulWidget {
+  const _IncomeCard({required this.entry, required this.onTapEdit});
+
+  final IncomeEntry entry;
+  final VoidCallback onTapEdit;
+
+  @override
+  State<_IncomeCard> createState() => _IncomeCardState();
+}
+
+class _IncomeCardState extends State<_IncomeCard> {
+  Timer? _longPressTimer;
+
+  @override
+  void dispose() {
+    _longPressTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final e = widget.entry;
+    return GestureDetector(
+      onLongPressStart: (_) {
+        _longPressTimer = Timer(const Duration(milliseconds: 1500), widget.onTapEdit);
+      },
+      onLongPressEnd: (_) => _longPressTimer?.cancel(),
+      child: Container(
+        decoration: BoxDecoration(color: AppColors.bgCard, borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(e.source),
+                  Text(
+                    '${e.date.day}/${e.date.month}/${e.date.year}',
+                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              'R\$${e.amount.toStringAsFixed(2)}',
+              style: const TextStyle(color: AppColors.accentSuccess, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
       ),
     );
   }
