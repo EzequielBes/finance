@@ -29,9 +29,8 @@ class PlansScreen extends ConsumerWidget {
           return ReorderableListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             itemCount: plans.length,
-            onReorder: (oldIndex, newIndex) async {
+            onReorderItem: (oldIndex, newIndex) async {
               final ids = plans.map((p) => p.plan.id).toList();
-              if (newIndex > oldIndex) newIndex -= 1;
               final moved = ids.removeAt(oldIndex);
               ids.insert(newIndex, moved);
               await ref.read(plansRepositoryProvider).reorder(ids);
