@@ -66,7 +66,7 @@ class TransactionsRepository {
         description: description != null ? Value(description) : const Value.absent(),
         amount: amount != null ? Value(amount) : const Value.absent(),
         date: date != null ? Value(date) : const Value.absent(),
-        categoryId: Value(categoryId),
+        categoryId: categoryId != null ? Value(categoryId) : const Value.absent(),
         updatedAt: Value(DateTime.now()),
       ),
     );

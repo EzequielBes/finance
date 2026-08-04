@@ -78,4 +78,51 @@ void main() {
     expect(suggestions.length, 1);
     expect(suggestions.first, 'Mercado');
   });
+
+  test('update without categoryId leaves existing categoryId unchanged', () async {
+    await repo.create(
+      description: 'Original',
+      amount: 50.0,
+      date: DateTime(2026, 1, 5),
+      type: TransactionType.expense,
+      categoryId: 7,
+    );
+    final created = (await db.select(db.transactions).get()).first;
+
+    await repo.update(created.id, description: 'new desc');
+
+    final updated = await (db.select(db.transactions)..where((t) => t.id.equals(created.id))).getSingle();
+    expect(updated.description, 'new desc');
+    expect(updated.categoryId, 7);
+  });
+
+  test('remove deletes the transaction from the table', () async {
+    await repo.create(
+      description: 'To delete',
+      amount: 20.0,
+      date: DateTime(2026, 1, 5),
+      type: TransactionType.expense,
+    );
+    final created = (await db.select(db.transactions).get()).first;
+
+    await repo.remove(created.id);
+
+    final rows = await db.select(db.transactions).get();
+    expect(rows, isEmpty);
+  });
+
+  test('create with installments rolls over into the next year', () async {
+    await repo.create(
+      description: 'Ano novo',
+      amount: 100.0,
+      date: DateTime(2026, 11, 15),
+      type: TransactionType.expense,
+      installmentsTotal: 3,
+    );
+    final rows = await db.select(db.transactions).get();
+    expect(rows.length, 3);
+    expect(rows[0].date, DateTime(2026, 11, 15));
+    expect(rows[1].date, DateTime(2026, 12, 15));
+    expect(rows[2].date, DateTime(2027, 1, 15));
+  });
 }
