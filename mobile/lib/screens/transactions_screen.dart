@@ -74,7 +74,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         child: const Icon(Icons.add),
       ),
       body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         itemCount: groups.length,
         itemBuilder: (ctx, i) {
           final group = groups[i];

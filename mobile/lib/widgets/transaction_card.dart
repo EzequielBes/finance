@@ -111,23 +111,29 @@ class _TransactionCardState extends State<TransactionCard> {
                 bottomRight: Radius.circular(_expanded ? 0 : 12),
               ),
             ),
-            margin: const EdgeInsets.symmetric(vertical: 4),
-            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.symmetric(vertical: 6),
+            padding: const EdgeInsets.all(14),
             child: Row(
               children: [
                 CircleAvatar(
-                  radius: 20,
+                  radius: 21,
                   backgroundColor: avatarColor.withValues(alpha: 0.2),
                   child: Icon(categoryIconFor(category?.icon), color: avatarColor, size: 20),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Flexible(child: Text(current.description, overflow: TextOverflow.ellipsis)),
+                          Flexible(
+                            child: Text(
+                              current.description,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                            ),
+                          ),
                           if (group.isInstallmentGroup) ...[
                             const SizedBox(width: 8),
                             Container(
@@ -144,11 +150,12 @@ class _TransactionCardState extends State<TransactionCard> {
                           ],
                         ],
                       ),
+                      const SizedBox(height: 3),
                       Text(
                         category != null
                             ? '${category.name} · ${current.date.day}/${current.date.month}'
                             : '${current.date.day}/${current.date.month}',
-                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
                       ),
                     ],
                   ),
@@ -157,7 +164,8 @@ class _TransactionCardState extends State<TransactionCard> {
                   'R\$${current.amount.toStringAsFixed(2)}',
                   style: TextStyle(
                     color: isExpense ? AppColors.accentDanger : AppColors.accentSuccess,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
                   ),
                 ),
               ],
