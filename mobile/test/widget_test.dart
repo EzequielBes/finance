@@ -10,13 +10,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:mobile/main.dart';
+import 'package:mobile/screens/home_shell.dart';
 
 void main() {
   testWidgets('App initializes with ProviderScope', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const ProviderScope(child: AnalisadorFinanceiroApp()));
+    await tester.pumpAndSettle();
 
-    // Verify that the app title appears or the home screen renders
+    // Verify that the app renders MaterialApp and the home screen (HomeShell).
     expect(find.byType(MaterialApp), findsOneWidget);
+    expect(find.byType(HomeShell), findsOneWidget);
   });
 }
