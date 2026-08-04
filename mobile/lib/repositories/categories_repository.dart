@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:mobile/data/database.dart';
 
@@ -85,27 +86,39 @@ class CategoriesRepository {
   }
 
   Stream<List<CategoryWithUsage>> watchAll() {
-    return db.select(db.categories).watch().asyncMap((cats) async {
-      final now = DateTime.now();
-      final monthStart = DateTime(now.year, now.month, 1);
-      // Exclusive upper bound = start of tomorrow, so the range covers
-      // "month-to-date" (day 1 of this month through end of today),
-      // matching the backend's `Transaction.date <= today` rule while
-      // avoiding clock-time-of-day exclusion issues for same-day txs.
-      final todayEnd = DateTime(now.year, now.month, now.day + 1);
-      final result = <CategoryWithUsage>[];
-      for (final cat in cats) {
-        final txs = await (db.select(db.transactions)
-              ..where((t) =>
-                  t.categoryId.equals(cat.id) &
-                  t.type.equalsValue(TransactionType.expense) &
-                  t.date.isBiggerOrEqualValue(monthStart) &
-                  t.date.isSmallerThanValue(todayEnd)))
-            .get();
-        final usage = txs.fold<double>(0.0, (sum, t) => sum + t.amount);
-        result.add(CategoryWithUsage(cat, usage));
-      }
-      return result;
-    });
+    // This stream must recompute whenever EITHER categories OR transactions
+    // change — currentMonthUsage is derived from transactions, so a plain
+    // `db.select(db.categories).watch()` (which only tracks the categories
+    // table) would never react to a new/edited/deleted transaction. Merging
+    // both tables' watch streams ensures a write to either triggers a
+    // recompute of the combined result.
+    final categoriesChanged = db.select(db.categories).watch().map((_) => null);
+    final transactionsChanged = db.select(db.transactions).watch().map((_) => null);
+    return StreamGroup.merge<void>([categoriesChanged, transactionsChanged])
+        .asyncMap((_) => _computeUsage());
+  }
+
+  Future<List<CategoryWithUsage>> _computeUsage() async {
+    final cats = await db.select(db.categories).get();
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month, 1);
+    // Exclusive upper bound = start of tomorrow, so the range covers
+    // "month-to-date" (day 1 of this month through end of today),
+    // matching the backend's `Transaction.date <= today` rule while
+    // avoiding clock-time-of-day exclusion issues for same-day txs.
+    final todayEnd = DateTime(now.year, now.month, now.day + 1);
+    final result = <CategoryWithUsage>[];
+    for (final cat in cats) {
+      final txs = await (db.select(db.transactions)
+            ..where((t) =>
+                t.categoryId.equals(cat.id) &
+                t.type.equalsValue(TransactionType.expense) &
+                t.date.isBiggerOrEqualValue(monthStart) &
+                t.date.isSmallerThanValue(todayEnd)))
+          .get();
+      final usage = txs.fold<double>(0.0, (sum, t) => sum + t.amount);
+      result.add(CategoryWithUsage(cat, usage));
+    }
+    return result;
   }
 }

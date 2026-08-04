@@ -130,6 +130,46 @@ void main() {
     expect(target.currentMonthUsage, 50.0);
   });
 
+  test('watchAll emits a new value when a transaction is inserted after subscription', () async {
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month, 1);
+    final catId = await repo.create(
+      name: 'Transporte',
+      type: CategoryType.expense,
+      color: '#8a9bb0',
+      icon: 'transactions',
+    );
+
+    final emissions = <double>[];
+    final subscription = repo.watchAll().listen((results) {
+      final target = results.firstWhere((c) => c.category.id == catId);
+      emissions.add(target.currentMonthUsage);
+    });
+
+    // Let the initial emission(s) (usage = 0, no transactions yet) land.
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(emissions, isNotEmpty);
+    expect(emissions.last, 0.0);
+
+    // Insert a transaction AFTER the stream is already subscribed — the
+    // stream must react to this, not just to changes on the categories table.
+    await db.into(db.transactions).insert(
+      TransactionsCompanion.insert(
+        categoryId: Value(catId),
+        description: 'Ônibus',
+        amount: 45.0,
+        date: monthStart,
+        type: TransactionType.expense,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(emissions.last, 45.0);
+    await subscription.cancel();
+  });
+
   test('update without monthlyLimit leaves existing monthlyLimit unchanged', () async {
     final catId = await repo.create(
       name: 'Lazer',
