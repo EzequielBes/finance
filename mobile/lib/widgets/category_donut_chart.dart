@@ -50,7 +50,7 @@ class CategoryDonutChart extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '${c.name} · ${formatMoney(c.total, SettingsScope.of(context).currency)}',
+                        '${c.name} · ${formatMoney(c.total, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.textPrimary,

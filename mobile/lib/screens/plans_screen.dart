@@ -156,7 +156,7 @@ class PlansScreen extends ConsumerWidget {
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      '${formatMoney(item.plan.currentSavings, SettingsScope.of(context).currency)} guardados',
+                                      '${formatMoney(item.plan.currentSavings, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)} guardados',
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         fontSize: 13,
@@ -168,7 +168,7 @@ class PlansScreen extends ConsumerWidget {
                                   const SizedBox(width: 8),
                                   Flexible(
                                     child: Text(
-                                      'meta ${formatMoney(item.plan.targetAmount, SettingsScope.of(context).currency)}',
+                                      'meta ${formatMoney(item.plan.targetAmount, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
                                       overflow: TextOverflow.ellipsis,
                                       textAlign: TextAlign.right,
                                       style: const TextStyle(
@@ -204,7 +204,7 @@ class PlansScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   Text(
-                                    'Aporte ${formatMoney(item.plan.monthlyContribution, SettingsScope.of(context).currency)}/mês',
+                                    'Aporte ${formatMoney(item.plan.monthlyContribution, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}/mês',
                                     style: const TextStyle(
                                       fontSize: 11,
                                       color: AppColors.textSecondary,
@@ -271,7 +271,11 @@ class _PlansSummary extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  formatMoney(saved, SettingsScope.of(context).currency),
+                  formatMoney(
+                    saved,
+                    SettingsScope.of(context).currency,
+                    SettingsScope.of(context).decimalSeparator,
+                  ),
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
@@ -291,7 +295,7 @@ class _PlansSummary extends StatelessWidget {
                 ),
               ),
               Text(
-                'Meta total ${formatMoney(target, SettingsScope.of(context).currency)}',
+                'Meta total ${formatMoney(target, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
                 style: const TextStyle(
                   fontSize: 11,
                   color: AppColors.textSecondary,

@@ -20,9 +20,10 @@ Future<void> showTransactionFormSheet(
     text: existing?.description ?? '',
   );
   final currency = SettingsScope.of(context).currency;
+  final decimalSeparator = SettingsScope.of(context).decimalSeparator;
   final amountController = TextEditingController(
     text: existing != null
-        ? formatCents((existing.amount * 100).round(), currency)
+        ? formatCents((existing.amount * 100).round(), currency, decimalSeparator)
         : '',
   );
   var date = existing?.date ?? DateTime.now();
@@ -64,7 +65,11 @@ Future<void> showTransactionFormSheet(
                   categoryId = null;
                 }
                 final isExpense = type == TransactionType.expense;
-                final amount = parseMoneyInput(amountController.text, currency);
+                final amount = parseMoneyInput(
+                  amountController.text,
+                  currency,
+                  decimalSeparator,
+                );
                 final perInstallment = installments > 0
                     ? amount / installments
                     : amount;
@@ -105,7 +110,9 @@ Future<void> showTransactionFormSheet(
                       TextField(
                         controller: amountController,
                         keyboardType: TextInputType.number,
-                        inputFormatters: [MoneyInputFormatter(currency)],
+                        inputFormatters: [
+                          MoneyInputFormatter(currency, decimalSeparator),
+                        ],
                         style: const TextStyle(
                           fontSize: 16,
                           color: AppColors.textPrimary,
@@ -215,6 +222,7 @@ Future<void> showTransactionFormSheet(
                           final savedAmount = parseMoneyInput(
                             amountController.text,
                             currency,
+                            decimalSeparator,
                           );
                           if (existing == null) {
                             await repo.create(
@@ -427,7 +435,7 @@ class _InstallmentsCard extends StatelessWidget {
               const Spacer(),
               if (installments > 1)
                 Text(
-                  'de ${formatMoney(perInstallment, SettingsScope.of(context).currency)}',
+                  'de ${formatMoney(perInstallment, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
                   style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,

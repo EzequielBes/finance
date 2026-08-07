@@ -217,6 +217,7 @@ class _PaymentMarker extends StatelessWidget {
                         formatMoney(
                           event.amount,
                           SettingsScope.of(context).currency,
+                          SettingsScope.of(context).decimalSeparator,
                         ),
                         style: const TextStyle(
                           color: AppColors.accentDanger,

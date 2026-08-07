@@ -150,7 +150,7 @@ class _IncomeCardState extends State<_IncomeCard> {
             ),
           ),
           Text(
-            '+ ${formatMoney(e.amount, SettingsScope.of(context).currency)}',
+            '+ ${formatMoney(e.amount, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
             style: const TextStyle(
               color: AppColors.accentSuccess,
               fontWeight: FontWeight.bold,
@@ -203,7 +203,11 @@ class _IncomeSummary extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            formatMoney(total, SettingsScope.of(context).currency),
+            formatMoney(
+              total,
+              SettingsScope.of(context).currency,
+              SettingsScope.of(context).decimalSeparator,
+            ),
             style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w800,

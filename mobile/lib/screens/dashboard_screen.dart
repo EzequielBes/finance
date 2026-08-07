@@ -196,6 +196,7 @@ class _FinancialHealthCard extends StatelessWidget {
                         formatMoney(
                           summary.balance,
                           SettingsScope.of(context).currency,
+                          SettingsScope.of(context).decimalSeparator,
                         ),
                         style: const TextStyle(
                           fontSize: 25,
@@ -257,7 +258,7 @@ class _FinancialHealthCard extends StatelessWidget {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerRight,
                         child: Text(
-                          '${_percentageOfIncome(category.total, summary.totalIncome)} · ${formatMoney(category.total, SettingsScope.of(context).currency)}',
+                          '${_percentageOfIncome(category.total, summary.totalIncome)} · ${formatMoney(category.total, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -307,7 +308,11 @@ class _Metric extends StatelessWidget {
           const SizedBox(height: 5),
           FittedBox(
             child: Text(
-              formatMoney(value, SettingsScope.of(context).currency),
+              formatMoney(
+                value,
+                SettingsScope.of(context).currency,
+                SettingsScope.of(context).decimalSeparator,
+              ),
               style: TextStyle(
                 color: color,
                 fontSize: 17,

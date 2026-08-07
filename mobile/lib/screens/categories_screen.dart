@@ -154,7 +154,7 @@ class _CategoryCard extends StatelessWidget {
                     alignment: Alignment.centerRight,
                     child: Text(
                       limit != null
-                          ? '${formatMoney(item.currentMonthUsage, SettingsScope.of(context).currency)} / ${formatMoney(limit, SettingsScope.of(context).currency)}'
+                          ? '${formatMoney(item.currentMonthUsage, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)} / ${formatMoney(limit, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}'
                           : 'sem limite',
                       style: const TextStyle(
                         fontSize: 12.5,
@@ -225,7 +225,11 @@ class _ExpenseSummary extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            formatMoney(used, SettingsScope.of(context).currency),
+            formatMoney(
+              used,
+              SettingsScope.of(context).currency,
+              SettingsScope.of(context).decimalSeparator,
+            ),
             style: const TextStyle(
               fontSize: 27,
               fontWeight: FontWeight.w800,

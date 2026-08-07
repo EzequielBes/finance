@@ -1,24 +1,18 @@
 import 'package:mobile/settings/app_settings.dart';
 
-String formatMoney(double value, AppCurrency currency) {
+String formatMoney(double value, AppCurrency currency, DecimalSeparator decimalSeparator) {
   final decimals = currency == AppCurrency.jpy ? 0 : 2;
-  final decimalSeparator = switch (currency) {
-    AppCurrency.brl || AppCurrency.eur => ',',
-    AppCurrency.usd || AppCurrency.jpy => '.',
-  };
-  final groupSeparator = switch (currency) {
-    AppCurrency.brl || AppCurrency.eur => '.',
-    AppCurrency.usd || AppCurrency.jpy => ',',
-  };
+  final decimalChar = decimalSeparator == DecimalSeparator.comma ? ',' : '.';
+  final groupChar = decimalSeparator == DecimalSeparator.comma ? '.' : ',';
   final symbol = currencySymbol(currency);
   final absolute = value.abs().toStringAsFixed(decimals).split('.');
   final digits = absolute.first;
   final grouped = StringBuffer();
   for (var i = 0; i < digits.length; i++) {
-    if (i > 0 && (digits.length - i) % 3 == 0) grouped.write(groupSeparator);
+    if (i > 0 && (digits.length - i) % 3 == 0) grouped.write(groupChar);
     grouped.write(digits[i]);
   }
-  final fraction = decimals == 0 ? '' : '$decimalSeparator${absolute.last}';
+  final fraction = decimals == 0 ? '' : '$decimalChar${absolute.last}';
   return '${value < 0 ? '-' : ''}$symbol ${grouped.toString()}$fraction';
 }
 

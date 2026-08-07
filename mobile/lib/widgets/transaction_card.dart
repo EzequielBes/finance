@@ -61,7 +61,7 @@ class _TransactionCardState extends State<TransactionCard> {
         children: sorted.map((t) {
           final label =
               '${t.installmentsCurrent}/${t.installmentsTotal} — '
-              '${formatShortDate(t.date)} — ${formatMoney(t.amount, SettingsScope.of(context).currency)}';
+              '${formatShortDate(t.date)} — ${formatMoney(t.amount, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}';
           return SimpleDialogOption(
             onPressed: () => Navigator.pop(ctx, t),
             child: Text(label),
@@ -175,7 +175,7 @@ class _TransactionCardState extends State<TransactionCard> {
                   ),
                 ),
                 Text(
-                  '− ${formatMoney(current.amount, SettingsScope.of(context).currency)}',
+                  '− ${formatMoney(current.amount, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
                   style: TextStyle(
                     color: isExpense
                         ? AppColors.accentDanger
@@ -245,6 +245,7 @@ class _TransactionCardState extends State<TransactionCard> {
                         formatMoney(
                           t.amount,
                           SettingsScope.of(context).currency,
+                          SettingsScope.of(context).decimalSeparator,
                         ),
                         style: TextStyle(color: statusColor, fontSize: 12.5),
                       ),

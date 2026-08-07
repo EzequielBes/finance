@@ -14,10 +14,11 @@ Future<void> showIncomeFormSheet(
   IncomeEntry? existing,
 }) {
   final currency = SettingsScope.of(context).currency;
+  final decimalSeparator = SettingsScope.of(context).decimalSeparator;
   final sourceController = TextEditingController(text: existing?.source ?? '');
   final amountController = TextEditingController(
     text: existing != null
-        ? formatCents((existing.amount * 100).round(), currency)
+        ? formatCents((existing.amount * 100).round(), currency, decimalSeparator)
         : '',
   );
   var date = existing?.date ?? DateTime.now();
@@ -72,7 +73,7 @@ Future<void> showIncomeFormSheet(
               TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
-                inputFormatters: [MoneyInputFormatter(currency)],
+                inputFormatters: [MoneyInputFormatter(currency, decimalSeparator)],
                 decoration: InputDecoration(
                   labelText: 'Valor',
                   prefixText: '${currencySymbol(currency)} ',
@@ -107,6 +108,7 @@ Future<void> showIncomeFormSheet(
                   final amount = parseMoneyInput(
                     amountController.text,
                     currency,
+                    decimalSeparator,
                   );
                   if (existing == null) {
                     await repo.create(

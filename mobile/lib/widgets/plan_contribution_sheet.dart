@@ -16,6 +16,7 @@ Future<void> showPlanContributionSheet(
   required ContributionType type,
 }) {
   final currency = SettingsScope.of(context).currency;
+  final decimalSeparator = SettingsScope.of(context).decimalSeparator;
   final amountController = TextEditingController();
   final isDeposit = type == ContributionType.deposit;
 
@@ -47,7 +48,7 @@ Future<void> showPlanContributionSheet(
               TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
-                inputFormatters: [MoneyInputFormatter(currency)],
+                inputFormatters: [MoneyInputFormatter(currency, decimalSeparator)],
                 autofocus: true,
                 decoration: InputDecoration(
                   labelText: 'Valor',
@@ -66,6 +67,7 @@ Future<void> showPlanContributionSheet(
                   final amount = parseMoneyInput(
                     amountController.text,
                     currency,
+                    decimalSeparator,
                   );
                   if (amount > 0) {
                     await ref

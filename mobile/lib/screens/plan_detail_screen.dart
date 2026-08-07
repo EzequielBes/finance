@@ -229,6 +229,7 @@ class _OverviewTab extends ConsumerWidget {
                       value: formatMoney(
                         plan.currentSavings,
                         SettingsScope.of(context).currency,
+                        SettingsScope.of(context).decimalSeparator,
                       ),
                       color: AppColors.accentSuccess,
                     ),
@@ -237,6 +238,7 @@ class _OverviewTab extends ConsumerWidget {
                       value: formatMoney(
                         plan.targetAmount,
                         SettingsScope.of(context).currency,
+                        SettingsScope.of(context).decimalSeparator,
                       ),
                     ),
                     if (simulation?.monthsToGoal != null)
@@ -305,7 +307,7 @@ class _OverviewTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  'Contribuição mensal: ${formatMoney(simulatedContribution, SettingsScope.of(context).currency)}',
+                  'Contribuição mensal: ${formatMoney(simulatedContribution, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
                   style: const TextStyle(color: AppColors.textSecondary),
                 ),
                 Slider(
@@ -393,7 +395,7 @@ class _SubPlansTab extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${formatMoney(sub.currentSavings, SettingsScope.of(context).currency)} / ${formatMoney(sub.targetAmount, SettingsScope.of(context).currency)}',
+                  '${formatMoney(sub.currentSavings, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)} / ${formatMoney(sub.targetAmount, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
                   style: const TextStyle(
                     fontSize: 12.5,
                     color: AppColors.textSecondary,

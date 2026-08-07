@@ -219,7 +219,7 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
                 children: [
                   Expanded(
                     child: Text(
-                      '${cut.category.name} — ${formatMoney(cut.cutAmount, SettingsScope.of(context).currency)} (${cut.cutPercentOfCategory.toStringAsFixed(0)}%)',
+                      '${cut.category.name} — ${formatMoney(cut.cutAmount, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)} (${cut.cutPercentOfCategory.toStringAsFixed(0)}%)',
                       style: const TextStyle(fontSize: 12.5),
                     ),
                   ),
@@ -251,7 +251,11 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
                 ),
                 const Spacer(),
                 Text(
-                  formatMoney(_totalCut, SettingsScope.of(context).currency),
+                  formatMoney(
+                    _totalCut,
+                    SettingsScope.of(context).currency,
+                    SettingsScope.of(context).decimalSeparator,
+                  ),
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     color: AppColors.accentSuccess,
