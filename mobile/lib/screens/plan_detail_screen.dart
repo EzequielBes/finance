@@ -327,7 +327,10 @@ class _OverviewTab extends ConsumerWidget {
                         const SizedBox(width: 24),
                         _Stat(
                           label: 'Data estimada',
-                          value: formatMonthYear(simulation!.estimatedDate!),
+                          value: formatMonthYear(
+                            simulation!.estimatedDate!,
+                            SettingsScope.of(context).dateFormat,
+                          ),
                         ),
                       ],
                     ],

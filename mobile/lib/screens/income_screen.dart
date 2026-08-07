@@ -140,7 +140,7 @@ class _IncomeCardState extends State<_IncomeCard> {
                   ),
                 ),
                 Text(
-                  formatFullDate(e.date),
+                  formatFullDate(e.date, SettingsScope.of(context).dateFormat),
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,

@@ -128,7 +128,7 @@ class PlansScreen extends ConsumerWidget {
                                         Text(
                                           item.plan.deadline == null
                                               ? 'Sem prazo definido'
-                                              : 'Meta até ${formatMonthYear(item.plan.deadline!)}',
+                                              : 'Meta até ${formatMonthYear(item.plan.deadline!, SettingsScope.of(context).dateFormat)}',
                                           style: const TextStyle(
                                             fontSize: 11,
                                             color: AppColors.textSecondary,

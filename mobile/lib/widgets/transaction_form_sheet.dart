@@ -184,7 +184,9 @@ Future<void> showTransactionFormSheet(
                           decoration: const InputDecoration(
                             suffixIcon: Icon(Icons.calendar_today_outlined),
                           ),
-                          child: Text(formatFullDate(date)),
+                          child: Text(
+                            formatFullDate(date, SettingsScope.of(ctx).dateFormat),
+                          ),
                         ),
                       ),
                       if (existing == null) ...[
