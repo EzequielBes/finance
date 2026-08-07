@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/dashboard_provider.dart';
 import 'package:mobile/repositories/dashboard_repository.dart';
+import 'package:mobile/screens/settings/settings_screen.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/app_theme.dart';
 import 'package:mobile/theme/money_format.dart';
@@ -24,7 +25,10 @@ class DashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             tooltip: 'Configurações',
-            onPressed: () => _showCurrencySettings(context),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
             icon: const Icon(Icons.tune_rounded),
           ),
           const SizedBox(width: 8),
@@ -383,75 +387,6 @@ String _percentageOfIncome(double value, double income) {
   return percent < 1
       ? '${percent.toStringAsFixed(1)}%'
       : '${percent.toStringAsFixed(0)}%';
-}
-
-Future<void> _showCurrencySettings(BuildContext context) {
-  final settings = SettingsScope.of(context);
-  return showModalBottomSheet<void>(
-    context: context,
-    backgroundColor: AppColors.bgCard,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (context) => SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 38,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.textSecondary.withValues(alpha: 0.45),
-                  borderRadius: BorderRadius.circular(99),
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            const Text(
-              'Moeda do aplicativo',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Altera a unidade exibida. Os valores não são convertidos por cotação.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-            ),
-            const SizedBox(height: 12),
-            for (final currency in AppCurrency.values)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(currencyLabel(currency)),
-                leading: CircleAvatar(
-                  backgroundColor: AppColors.bgInput,
-                  child: Text(
-                    currencySymbol(currency),
-                    style: const TextStyle(
-                      color: AppColors.accentPrimary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                trailing: settings.currency == currency
-                    ? const Icon(
-                        Icons.check_circle,
-                        color: AppColors.accentPrimary,
-                      )
-                    : null,
-                onTap: () async {
-                  await settings.setCurrency(currency);
-                  if (context.mounted) Navigator.pop(context);
-                },
-              ),
-          ],
-        ),
-      ),
-    ),
-  );
 }
 
 class _SectionHeader extends StatelessWidget {
