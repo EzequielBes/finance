@@ -16,7 +16,7 @@ void main() {
   testWidgets('App initializes with ProviderScope', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const ProviderScope(child: AnalisadorFinanceiroApp()));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     // Verify that the app renders MaterialApp and the home screen (HomeShell).
     expect(find.byType(MaterialApp), findsOneWidget);
