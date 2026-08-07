@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/repositories/plans_repository.dart';
@@ -142,11 +143,12 @@ class DashboardRepository {
 
   Future<List<TimelineEvent>> getTimeline({int monthsAhead = 6}) async {
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     final cutoff = DateTime(now.year, now.month + monthsAhead, now.day);
     final events = <TimelineEvent>[];
 
     final txs = await (db.select(db.transactions)
-          ..where((t) => t.date.isBiggerOrEqualValue(now) & t.date.isSmallerOrEqualValue(cutoff)))
+          ..where((t) => t.date.isBiggerOrEqualValue(today) & t.date.isSmallerOrEqualValue(cutoff)))
         .get();
     final categories = await db.select(db.categories).get();
     final categoriesById = {for (final c in categories) c.id: c};
@@ -177,7 +179,7 @@ class DashboardRepository {
       );
       final targetDate = plan.deadline ?? simulation.estimatedDate;
       if (targetDate == null) continue;
-      if (targetDate.isBefore(now) || targetDate.isAfter(cutoff)) continue;
+      if (targetDate.isBefore(today) || targetDate.isAfter(cutoff)) continue;
       events.add(PlanMilestoneTimelineEvent(
         id: plan.id,
         title: plan.name,
@@ -190,5 +192,26 @@ class DashboardRepository {
 
     events.sort((a, b) => a.date.compareTo(b.date));
     return events;
+  }
+
+  // Dashboard summary/timeline are derived from transactions, income entries,
+  // and plans — a plain watch on any single table would miss writes to the
+  // others. Merging all relevant tables' watch streams ensures a write to
+  // any of them triggers a recompute, matching the pattern already used by
+  // CategoriesRepository.watchAll() and PlansRepository.watchAll().
+  Stream<DashboardSummary> watchSummary({int? month, int? year}) {
+    final transactionsChanged = db.select(db.transactions).watch().map((_) => null);
+    final incomeChanged = db.select(db.incomeEntries).watch().map((_) => null);
+    final categoriesChanged = db.select(db.categories).watch().map((_) => null);
+    return StreamGroup.merge<void>([transactionsChanged, incomeChanged, categoriesChanged])
+        .asyncMap((_) => getSummary(month: month, year: year));
+  }
+
+  Stream<List<TimelineEvent>> watchTimeline({int monthsAhead = 6}) {
+    final transactionsChanged = db.select(db.transactions).watch().map((_) => null);
+    final categoriesChanged = db.select(db.categories).watch().map((_) => null);
+    final plansChanged = db.select(db.plans).watch().map((_) => null);
+    return StreamGroup.merge<void>([transactionsChanged, categoriesChanged, plansChanged])
+        .asyncMap((_) => getTimeline(monthsAhead: monthsAhead));
   }
 }

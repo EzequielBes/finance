@@ -244,4 +244,61 @@ void main() {
     expect(events.length, 2);
     expect(events[0].date.isBefore(events[1].date), true);
   });
+
+  test('watchSummary emits a new value when a transaction is inserted after subscription', () async {
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month, 1);
+    final catId = await db.into(db.categories).insert(
+      CategoriesCompanion.insert(
+        name: 'Lazer', type: CategoryType.expense, color: '#c17a54', icon: 'tag',
+        createdAt: now, updatedAt: now,
+      ),
+    );
+
+    final emissions = <double>[];
+    final subscription = repo.watchSummary().listen((summary) {
+      emissions.add(summary.totalExpense);
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(emissions, isNotEmpty);
+    expect(emissions.last, 0.0);
+
+    // Insert a transaction AFTER the stream is already subscribed — the
+    // stream must react to this, not just to changes made before subscribing.
+    await db.into(db.transactions).insert(
+      TransactionsCompanion.insert(
+        categoryId: Value(catId), description: 'Cinema', amount: 150.0, date: monthStart,
+        type: TransactionType.expense, createdAt: now, updatedAt: now,
+      ),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(emissions.last, 150.0);
+    await subscription.cancel();
+  });
+
+  test('watchTimeline emits a new value when a plan is inserted after subscription', () async {
+    final emissions = <int>[];
+    final subscription = repo.watchTimeline().listen((events) {
+      emissions.add(events.length);
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(emissions, isNotEmpty);
+    expect(emissions.last, 0);
+
+    final now = DateTime.now();
+    await db.into(db.plans).insert(
+      PlansCompanion.insert(
+        name: 'Viagem', targetAmount: 10000.0, monthlyContribution: 100.0,
+        deadline: Value(now.add(const Duration(days: 30))), color: '#c17a54',
+        createdAt: now, updatedAt: now,
+      ),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(emissions.last, 1);
+    await subscription.cancel();
+  });
 }

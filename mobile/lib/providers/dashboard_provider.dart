@@ -8,10 +8,10 @@ final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
   return DashboardRepository(ref.watch(appDatabaseProvider), ref.watch(plansRepositoryProvider));
 });
 
-final dashboardSummaryProvider = FutureProvider<DashboardSummary>((ref) {
-  return ref.watch(dashboardRepositoryProvider).getSummary();
+final dashboardSummaryProvider = StreamProvider<DashboardSummary>((ref) {
+  return ref.watch(dashboardRepositoryProvider).watchSummary();
 });
 
-final dashboardTimelineProvider = FutureProvider<List<TimelineEvent>>((ref) {
-  return ref.watch(dashboardRepositoryProvider).getTimeline();
+final dashboardTimelineProvider = StreamProvider<List<TimelineEvent>>((ref) {
+  return ref.watch(dashboardRepositoryProvider).watchTimeline();
 });
