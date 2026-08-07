@@ -200,4 +200,23 @@ void main() {
     final updated = await (db.select(db.categories)..where((c) => c.id.equals(catId))).getSingle();
     expect(updated.monthlyLimit, isNull);
   });
+
+  test('setActive toggles isActive without touching other fields', () async {
+    final repo = CategoriesRepository(db);
+    final id = await repo.create(
+      name: 'Lazer',
+      type: CategoryType.expense,
+      color: '#c17a54',
+      icon: 'tag',
+    );
+
+    await repo.setActive(id, false);
+    var row = await (db.select(db.categories)..where((c) => c.id.equals(id))).getSingle();
+    expect(row.isActive, false);
+    expect(row.name, 'Lazer');
+
+    await repo.setActive(id, true);
+    row = await (db.select(db.categories)..where((c) => c.id.equals(id))).getSingle();
+    expect(row.isActive, true);
+  });
 }

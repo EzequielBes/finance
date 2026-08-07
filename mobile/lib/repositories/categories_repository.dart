@@ -144,6 +144,15 @@ class CategoriesRepository {
     );
   }
 
+  Future<void> setActive(int id, bool active) {
+    return (db.update(db.categories)..where((c) => c.id.equals(id))).write(
+      CategoriesCompanion(
+        isActive: Value(active),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
   Stream<List<CategoryWithUsage>> watchAll() {
     // This stream must recompute whenever EITHER categories OR transactions
     // change — currentMonthUsage is derived from transactions, so a plain

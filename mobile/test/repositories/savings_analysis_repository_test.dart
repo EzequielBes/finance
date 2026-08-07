@@ -64,9 +64,9 @@ void main() {
     test('distributes proportionally to weight and sums exactly to target', () {
       final now = DateTime.now();
       final categories = [
-        Category(id: 1, name: 'Lazer', type: CategoryType.expense, color: '#c17a54', icon: 'tag', monthlyLimit: null, createdAt: now, updatedAt: now),
-        Category(id: 2, name: 'Compras', type: CategoryType.expense, color: '#7a9b7e', icon: 'wallet', monthlyLimit: null, createdAt: now, updatedAt: now),
-        Category(id: 3, name: 'Educação', type: CategoryType.expense, color: '#8a9bb0', icon: 'tag', monthlyLimit: null, createdAt: now, updatedAt: now),
+        Category(id: 1, name: 'Lazer', type: CategoryType.expense, color: '#c17a54', icon: 'tag', monthlyLimit: null, isActive: true, createdAt: now, updatedAt: now),
+        Category(id: 2, name: 'Compras', type: CategoryType.expense, color: '#7a9b7e', icon: 'wallet', monthlyLimit: null, isActive: true, createdAt: now, updatedAt: now),
+        Category(id: 3, name: 'Educação', type: CategoryType.expense, color: '#8a9bb0', icon: 'tag', monthlyLimit: null, isActive: true, createdAt: now, updatedAt: now),
       ];
       final candidates = [
         SavingsCandidate(category: categories[0], currentMonthAmount: 400.0, reference: 300.0), // over limit, weight 1.33
@@ -87,7 +87,7 @@ void main() {
 
     test('excludes categories with zero reference from suggestion', () {
       final now = DateTime.now();
-      final cat = Category(id: 1, name: 'Nova', type: CategoryType.expense, color: '#c17a54', icon: 'tag', monthlyLimit: null, createdAt: now, updatedAt: now);
+      final cat = Category(id: 1, name: 'Nova', type: CategoryType.expense, color: '#c17a54', icon: 'tag', monthlyLimit: null, isActive: true, createdAt: now, updatedAt: now);
       final candidates = [
         SavingsCandidate(category: cat, currentMonthAmount: 50.0, reference: 0.0),
       ];

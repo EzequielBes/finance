@@ -53,9 +53,10 @@ Future<void> showTransactionFormSheet(
                     .where(
                       (c) =>
                           c.category.type ==
-                          (type == TransactionType.expense
-                              ? CategoryType.expense
-                              : CategoryType.income),
+                              (type == TransactionType.expense
+                                  ? CategoryType.expense
+                                  : CategoryType.income) &&
+                          c.category.isActive,
                     )
                     .toList();
                 if (categoryId != null &&

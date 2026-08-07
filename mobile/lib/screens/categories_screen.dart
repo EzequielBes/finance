@@ -24,7 +24,11 @@ class CategoriesScreen extends ConsumerWidget {
       body: categoriesAsync.when(
         data: (categories) {
           final expenses = categories
-              .where((item) => item.category.type == CategoryType.expense)
+              .where(
+                (item) =>
+                    item.category.type == CategoryType.expense &&
+                    item.category.isActive,
+              )
               .toList();
           final used = expenses.fold<double>(
             0,
