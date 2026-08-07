@@ -7,10 +7,16 @@ import 'package:mobile/providers/savings_analysis_provider.dart';
 import 'package:mobile/repositories/plans_repository.dart';
 import 'package:mobile/repositories/savings_analysis_repository.dart';
 import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/settings/app_settings.dart';
+import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/plan_icons.dart';
 
 class SavingsPlanSection extends ConsumerStatefulWidget {
-  const SavingsPlanSection({super.key, required this.plan, required this.simulation});
+  const SavingsPlanSection({
+    super.key,
+    required this.plan,
+    required this.simulation,
+  });
   final Plan plan;
   final PlanSimulation? simulation;
 
@@ -29,7 +35,9 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
   @override
   void initState() {
     super.initState();
-    _targetPercentController = TextEditingController(text: _targetPercent.toStringAsFixed(0));
+    _targetPercentController = TextEditingController(
+      text: _targetPercent.toStringAsFixed(0),
+    );
   }
 
   @override
@@ -55,7 +63,8 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
     _recomputeSimulation();
   }
 
-  double get _totalCut => _selectedCuts.values.fold(0.0, (sum, c) => sum + c.cutAmount);
+  double get _totalCut =>
+      _selectedCuts.values.fold(0.0, (sum, c) => sum + c.cutAmount);
 
   Future<void> _recomputeSimulation() async {
     final plansRepo = ref.read(plansRepositoryProvider);
@@ -70,7 +79,10 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(color: AppColors.bgCard, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Column(
         children: [
           InkWell(
@@ -83,14 +95,27 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  Icon(planSavingsIcon, size: 18, color: AppColors.accentPrimary),
+                  Icon(
+                    planSavingsIcon,
+                    size: 18,
+                    color: AppColors.accentPrimary,
+                  ),
                   const SizedBox(width: 8),
-                  const Text('Plano de economia', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+                  const Text(
+                    'Plano de economia',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13.5,
+                    ),
+                  ),
                   const Spacer(),
                   AnimatedRotation(
                     turns: _expanded ? 0.5 : 0,
                     duration: const Duration(milliseconds: 200),
-                    child: const Icon(Icons.expand_more, color: AppColors.textSecondary),
+                    child: const Icon(
+                      Icons.expand_more,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -102,7 +127,9 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: _buildExpandedContent(),
             ),
-            crossFadeState: _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+            crossFadeState: _expanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
             duration: const Duration(milliseconds: 200),
           ),
         ],
@@ -121,22 +148,42 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(color: AppColors.bgInput, borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(
+            color: AppColors.bgInput,
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Row(
             children: [
-              const Text('Economizar', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              const Text(
+                'Economizar',
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              ),
               const SizedBox(width: 8),
               SizedBox(
                 width: 50,
                 child: TextField(
                   controller: _targetPercentController,
                   keyboardType: TextInputType.number,
-                  style: const TextStyle(color: AppColors.accentPrimary, fontWeight: FontWeight.w700, fontSize: 16),
-                  decoration: const InputDecoration(border: InputBorder.none, isDense: true),
-                  onChanged: (v) => _targetPercent = double.tryParse(v) ?? _targetPercent,
+                  style: const TextStyle(
+                    color: AppColors.accentPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    isDense: true,
+                  ),
+                  onChanged: (v) =>
+                      _targetPercent = double.tryParse(v) ?? _targetPercent,
                 ),
               ),
-              const Text('%', style: TextStyle(color: AppColors.accentPrimary, fontWeight: FontWeight.w700)),
+              const Text(
+                '%',
+                style: TextStyle(
+                  color: AppColors.accentPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const Spacer(),
               TextButton.icon(
                 icon: Icon(planSuggestIcon, size: 16),
@@ -148,30 +195,42 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
         ),
         const SizedBox(height: 14),
         if (_selectedCuts.isNotEmpty) ...[
-          const Text('CATEGORIAS NO PLANO', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+          const Text(
+            'CATEGORIAS NO PLANO',
+            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          ),
           const SizedBox(height: 8),
-          ..._selectedCuts.values.map((cut) => Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: AppColors.bgInput, borderRadius: BorderRadius.circular(12)),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '${cut.category.name} — R\$${cut.cutAmount.toStringAsFixed(2)} (${cut.cutPercentOfCategory.toStringAsFixed(0)}%)',
-                        style: const TextStyle(fontSize: 12.5),
-                      ),
+          ..._selectedCuts.values.map(
+            (cut) => Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.bgInput,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${cut.category.name} — ${formatMoney(cut.cutAmount, SettingsScope.of(context).currency)} (${cut.cutPercentOfCategory.toStringAsFixed(0)}%)',
+                      style: const TextStyle(fontSize: 12.5),
                     ),
-                    IconButton(
-                      icon: Icon(planRemoveIcon, size: 16, color: AppColors.textSecondary),
-                      onPressed: () {
-                        setState(() => _selectedCuts.remove(cut.category.id));
-                        _recomputeSimulation();
-                      },
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      planRemoveIcon,
+                      size: 16,
+                      color: AppColors.textSecondary,
                     ),
-                  ],
-                ),
-              )),
+                    onPressed: () {
+                      setState(() => _selectedCuts.remove(cut.category.id));
+                      _recomputeSimulation();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: const BoxDecoration(
@@ -179,16 +238,23 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
             ),
             child: Row(
               children: [
-                const Text('Total economizado', style: TextStyle(fontSize: 12.5)),
+                const Text(
+                  'Total economizado',
+                  style: TextStyle(fontSize: 12.5),
+                ),
                 const Spacer(),
                 Text(
-                  'R\$${_totalCut.toStringAsFixed(2)}',
-                  style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.accentSuccess),
+                  formatMoney(_totalCut, SettingsScope.of(context).currency),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.accentSuccess,
+                  ),
                 ),
               ],
             ),
           ),
-          if (_newSimulation?.monthsToGoal != null && widget.simulation?.monthsToGoal != null)
+          if (_newSimulation?.monthsToGoal != null &&
+              widget.simulation?.monthsToGoal != null)
             Row(
               children: [
                 const Text('Novo prazo', style: TextStyle(fontSize: 12.5)),
@@ -202,7 +268,10 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
         ] else
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8),
-            child: Text('Nenhuma categoria no plano ainda. Toque "Sugerir" ou adicione manualmente.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            child: Text(
+              'Nenhuma categoria no plano ainda. Toque "Sugerir" ou adicione manualmente.',
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            ),
           ),
       ],
     );

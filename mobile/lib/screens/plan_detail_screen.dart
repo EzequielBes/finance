@@ -6,6 +6,8 @@ import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/plans_provider.dart';
 import 'package:mobile/repositories/plans_repository.dart';
 import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/settings/app_settings.dart';
+import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/plan_icons.dart';
 import 'package:mobile/widgets/plan_contribution_sheet.dart';
 import 'package:mobile/widgets/plan_form_sheet.dart';
@@ -19,7 +21,8 @@ class PlanDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<PlanDetailScreen> createState() => _PlanDetailScreenState();
 }
 
-class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> with SingleTickerProviderStateMixin {
+class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
+    with SingleTickerProviderStateMixin {
   double? _simulatedContribution;
   PlanSimulation? _simulation;
   double? _simulatedCurrentSavings;
@@ -71,11 +74,14 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> with Single
           }
         }
         if (plan == null) {
-          return const Scaffold(body: Center(child: Text('Plano não encontrado')));
+          return const Scaffold(
+            body: Center(child: Text('Plano não encontrado')),
+          );
         }
         _ensureTabController(subPlans.isNotEmpty);
         _simulatedContribution ??= plan.monthlyContribution;
-        if (_simulation == null || _simulatedCurrentSavings != plan.currentSavings) {
+        if (_simulation == null ||
+            _simulatedCurrentSavings != plan.currentSavings) {
           _simulatedCurrentSavings = plan.currentSavings;
           _runSimulation(plan, _simulatedContribution!);
         }
@@ -86,7 +92,8 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> with Single
             actions: [
               IconButton(
                 icon: Icon(planEditIcon),
-                onPressed: () => showPlanFormSheet(context, ref, existing: plan),
+                onPressed: () =>
+                    showPlanFormSheet(context, ref, existing: plan),
               ),
             ],
             bottom: _hasSubPlans
@@ -99,9 +106,14 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> with Single
                   )
                 : null,
           ),
-          floatingActionButton: _hasSubPlans && (_tabController?.index ?? 0) == 1
+          floatingActionButton:
+              _hasSubPlans && (_tabController?.index ?? 0) == 1
               ? FloatingActionButton(
-                  onPressed: () => showPlanFormSheet(context, ref, defaultParentPlanId: plan!.id),
+                  onPressed: () => showPlanFormSheet(
+                    context,
+                    ref,
+                    defaultParentPlanId: plan!.id,
+                  ),
                   child: const Icon(Icons.add),
                 )
               : null,
@@ -116,7 +128,10 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> with Single
                       onContributionChanged: (v) {
                         setState(() => _simulatedContribution = v);
                         _debounce?.cancel();
-                        _debounce = Timer(const Duration(milliseconds: 400), () => _runSimulation(plan!, v));
+                        _debounce = Timer(
+                          const Duration(milliseconds: 400),
+                          () => _runSimulation(plan!, v),
+                        );
                       },
                     ),
                     _SubPlansTab(subPlans: subPlans),
@@ -129,12 +144,16 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> with Single
                   onContributionChanged: (v) {
                     setState(() => _simulatedContribution = v);
                     _debounce?.cancel();
-                    _debounce = Timer(const Duration(milliseconds: 400), () => _runSimulation(plan!, v));
+                    _debounce = Timer(
+                      const Duration(milliseconds: 400),
+                      () => _runSimulation(plan!, v),
+                    );
                   },
                 ),
         );
       },
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, _) => Scaffold(body: Center(child: Text('Erro: $e'))),
     );
   }
@@ -156,106 +175,171 @@ class _OverviewTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final color = Color(int.parse('0xFF${plan.color.substring(1)}'));
-    final percent = plan.targetAmount > 0 ? (plan.currentSavings / plan.targetAmount * 100).clamp(0.0, 100.0) : 0.0;
+    final percent = plan.targetAmount > 0
+        ? (plan.currentSavings / plan.targetAmount * 100).clamp(0.0, 100.0)
+        : 0.0;
 
     return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.bgCard,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: 100,
+                  height: 100,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: percent / 100),
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.easeOutCubic,
+                        builder: (ctx, value, _) => CircularProgressIndicator(
+                          value: value,
+                          strokeWidth: 8,
+                          backgroundColor: Colors.white.withValues(alpha: 0.06),
+                          color: color,
+                        ),
+                      ),
+                      Text(
+                        '${percent.toStringAsFixed(0)}%',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _Stat(
+                      label: 'Guardado',
+                      value: formatMoney(
+                        plan.currentSavings,
+                        SettingsScope.of(context).currency,
+                      ),
+                      color: AppColors.accentSuccess,
+                    ),
+                    _Stat(
+                      label: 'Meta',
+                      value: formatMoney(
+                        plan.targetAmount,
+                        SettingsScope.of(context).currency,
+                      ),
+                    ),
+                    if (simulation?.monthsToGoal != null)
+                      _Stat(
+                        label: 'Faltam',
+                        value: '${simulation!.monthsToGoal} meses',
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: AppColors.bgCard, borderRadius: BorderRadius.circular(20)),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: 100,
-                      height: 100,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          TweenAnimationBuilder<double>(
-                            tween: Tween(begin: 0, end: percent / 100),
-                            duration: const Duration(milliseconds: 600),
-                            curve: Curves.easeOutCubic,
-                            builder: (ctx, value, _) => CircularProgressIndicator(
-                              value: value,
-                              strokeWidth: 8,
-                              backgroundColor: Colors.white.withValues(alpha: 0.06),
-                              color: color,
-                            ),
-                          ),
-                          Text('${percent.toStringAsFixed(0)}%', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _Stat(label: 'Guardado', value: 'R\$${plan.currentSavings.toStringAsFixed(0)}', color: AppColors.accentSuccess),
-                        _Stat(label: 'Meta', value: 'R\$${plan.targetAmount.toStringAsFixed(0)}'),
-                        if (simulation?.monthsToGoal != null)
-                          _Stat(label: 'Faltam', value: '${simulation!.monthsToGoal} meses'),
-                      ],
-                    ),
-                  ],
+              Expanded(
+                child: OutlinedButton.icon(
+                  icon: Icon(planDepositIcon, color: AppColors.accentSuccess),
+                  label: const Text('Depositar'),
+                  onPressed: () => showPlanContributionSheet(
+                    context,
+                    ref,
+                    planId: plan.id,
+                    type: ContributionType.deposit,
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      icon: Icon(planDepositIcon, color: AppColors.accentSuccess),
-                      label: const Text('Depositar'),
-                      onPressed: () => showPlanContributionSheet(context, ref, planId: plan.id, type: ContributionType.deposit),
-                    ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  icon: Icon(planWithdrawIcon, color: AppColors.accentDanger),
+                  label: const Text('Retirar'),
+                  onPressed: () => showPlanContributionSheet(
+                    context,
+                    ref,
+                    planId: plan.id,
+                    type: ContributionType.withdrawal,
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      icon: Icon(planWithdrawIcon, color: AppColors.accentDanger),
-                      label: const Text('Retirar'),
-                      onPressed: () => showPlanContributionSheet(context, ref, planId: plan.id, type: ContributionType.withdrawal),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(color: AppColors.bgCard, borderRadius: BorderRadius.circular(16)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(children: [Icon(planSimulatorIcon, size: 18, color: AppColors.accentPrimary), const SizedBox(width: 8), const Text('Simulador interativo', style: TextStyle(fontWeight: FontWeight.w600))]),
-                    const SizedBox(height: 14),
-                    Text('Contribuição mensal: R\$${simulatedContribution.toStringAsFixed(0)}', style: const TextStyle(color: AppColors.textSecondary)),
-                    Slider(
-                      value: simulatedContribution,
-                      min: 50,
-                      max: plan.targetAmount,
-                      onChanged: onContributionChanged,
-                    ),
-                    if (simulation != null)
-                      Row(
-                        children: [
-                          _Stat(label: 'Prazo', value: simulation!.monthsToGoal != null ? '${simulation!.monthsToGoal} meses' : 'Indefinido'),
-                          if (simulation!.estimatedDate != null) ...[
-                            const SizedBox(width: 24),
-                            _Stat(label: 'Data estimada', value: '${simulation!.estimatedDate!.month}/${simulation!.estimatedDate!.year}'),
-                          ],
-                        ],
-                      ),
-                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              SavingsPlanSection(plan: plan, simulation: simulation),
             ],
           ),
-        );
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppColors.bgCard,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      planSimulatorIcon,
+                      size: 18,
+                      color: AppColors.accentPrimary,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Simulador interativo',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'Contribuição mensal: ${formatMoney(simulatedContribution, SettingsScope.of(context).currency)}',
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+                Slider(
+                  value: simulatedContribution,
+                  min: 50,
+                  max: plan.targetAmount,
+                  onChanged: onContributionChanged,
+                ),
+                if (simulation != null)
+                  Row(
+                    children: [
+                      _Stat(
+                        label: 'Prazo',
+                        value: simulation!.monthsToGoal != null
+                            ? '${simulation!.monthsToGoal} meses'
+                            : 'Indefinido',
+                      ),
+                      if (simulation!.estimatedDate != null) ...[
+                        const SizedBox(width: 24),
+                        _Stat(
+                          label: 'Data estimada',
+                          value:
+                              '${simulation!.estimatedDate!.month}/${simulation!.estimatedDate!.year}',
+                        ),
+                      ],
+                    ],
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          SavingsPlanSection(plan: plan, simulation: simulation),
+        ],
+      ),
+    );
   }
 }
 
@@ -267,7 +351,10 @@ class _SubPlansTab extends StatelessWidget {
   Widget build(BuildContext context) {
     if (subPlans.isEmpty) {
       return const Center(
-        child: Text('Nenhum sub-plano ainda', style: TextStyle(color: AppColors.textSecondary)),
+        child: Text(
+          'Nenhum sub-plano ainda',
+          style: TextStyle(color: AppColors.textSecondary),
+        ),
       );
     }
     return ListView.builder(
@@ -276,7 +363,9 @@ class _SubPlansTab extends StatelessWidget {
       itemBuilder: (ctx, i) {
         final sub = subPlans[i];
         final color = Color(int.parse('0xFF${sub.color.substring(1)}'));
-        final percent = sub.targetAmount > 0 ? (sub.currentSavings / sub.targetAmount * 100).clamp(0.0, 100.0) : 0.0;
+        final percent = sub.targetAmount > 0
+            ? (sub.currentSavings / sub.targetAmount * 100).clamp(0.0, 100.0)
+            : 0.0;
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
@@ -285,17 +374,27 @@ class _SubPlansTab extends StatelessWidget {
             border: Border(left: BorderSide(color: color, width: 4)),
           ),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
             title: Text(
               sub.name,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'R\$${sub.currentSavings.toStringAsFixed(0)} / R\$${sub.targetAmount.toStringAsFixed(0)}',
-                  style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                  '${formatMoney(sub.currentSavings, SettingsScope.of(context).currency)} / ${formatMoney(sub.targetAmount, SettingsScope.of(context).currency)}',
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 ClipRRect(
@@ -311,7 +410,9 @@ class _SubPlansTab extends StatelessWidget {
             ),
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => PlanDetailScreen(planId: sub.id)),
+              MaterialPageRoute(
+                builder: (_) => PlanDetailScreen(planId: sub.id),
+              ),
             ),
           ),
         );
@@ -331,9 +432,22 @@ class _Stat extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          Text(label.toUpperCase(), style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+          Text(
+            label.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 10,
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: color ?? AppColors.textPrimary)),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: color ?? AppColors.textPrimary,
+            ),
+          ),
         ],
       ),
     );

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/plans_provider.dart';
 import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/settings/app_settings.dart';
+import 'package:mobile/theme/money_format.dart';
 
 const _planColorPalette = ['#c17a54', '#7a9b7e', '#8a9bb0', '#b8563a'];
 
@@ -14,9 +16,17 @@ Future<void> showPlanFormSheet(
   int? defaultParentPlanId,
 }) {
   final nameController = TextEditingController(text: existing?.name ?? '');
-  final descController = TextEditingController(text: existing?.description ?? '');
-  final targetController = TextEditingController(text: existing != null ? existing.targetAmount.toStringAsFixed(2) : '');
-  final contributionController = TextEditingController(text: existing != null ? existing.monthlyContribution.toStringAsFixed(2) : '');
+  final descController = TextEditingController(
+    text: existing?.description ?? '',
+  );
+  final targetController = TextEditingController(
+    text: existing != null ? existing.targetAmount.toStringAsFixed(2) : '',
+  );
+  final contributionController = TextEditingController(
+    text: existing != null
+        ? existing.monthlyContribution.toStringAsFixed(2)
+        : '',
+  );
   var selectedColor = existing?.color ?? _planColorPalette.first;
   var parentPlanId = existing?.parentPlanId ?? defaultParentPlanId;
 
@@ -24,13 +34,17 @@ Future<void> showPlanFormSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: AppColors.bgCard,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
     builder: (ctx) => Consumer(
       builder: (ctx, consumerRef, _) {
         final plansAsync = consumerRef.watch(plansProvider);
         return SafeArea(
           child: Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            ),
             child: StatefulBuilder(
               builder: (ctx, setState) {
                 final rootPlans = (plansAsync.value ?? [])
@@ -45,35 +59,61 @@ Future<void> showPlanFormSheet(
                     children: [
                       TextField(
                         controller: nameController,
-                        decoration: const InputDecoration(labelText: 'Nome do plano'),
+                        decoration: const InputDecoration(
+                          labelText: 'Nome do plano',
+                        ),
                       ),
                       const SizedBox(height: 16),
                       TextField(
                         controller: descController,
-                        decoration: const InputDecoration(labelText: 'Descrição (opcional)'),
+                        decoration: const InputDecoration(
+                          labelText: 'Descrição (opcional)',
+                        ),
                       ),
                       const SizedBox(height: 16),
                       TextField(
                         controller: targetController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(labelText: 'Valor alvo'),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Valor alvo',
+                          prefixText:
+                              '${currencySymbol(SettingsScope.of(ctx).currency)} ',
+                        ),
                       ),
                       const SizedBox(height: 16),
                       TextField(
                         controller: contributionController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(labelText: 'Contribuição mensal'),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Contribuição mensal',
+                          prefixText:
+                              '${currencySymbol(SettingsScope.of(ctx).currency)} ',
+                        ),
                       ),
                       if (existing == null) ...[
                         const SizedBox(height: 16),
                         DropdownButtonFormField<int?>(
                           initialValue: parentPlanId,
-                          decoration: const InputDecoration(labelText: 'Plano pai (opcional)'),
+                          decoration: const InputDecoration(
+                            labelText: 'Plano pai (opcional)',
+                          ),
                           items: [
-                            const DropdownMenuItem<int?>(value: null, child: Text('Nenhum (plano raiz)')),
+                            const DropdownMenuItem<int?>(
+                              value: null,
+                              child: Text('Nenhum (plano raiz)'),
+                            ),
                             ...rootPlans
                                 .where((p) => p.parentPlanId == null)
-                                .map((p) => DropdownMenuItem<int?>(value: p.id, child: Text(p.name))),
+                                .map(
+                                  (p) => DropdownMenuItem<int?>(
+                                    value: p.id,
+                                    child: Text(p.name),
+                                  ),
+                                ),
                           ],
                           onChanged: (v) => setState(() => parentPlanId = v),
                         ),
@@ -90,9 +130,16 @@ Future<void> showPlanFormSheet(
                                 width: 32,
                                 height: 32,
                                 decoration: BoxDecoration(
-                                  color: Color(int.parse('0xFF${hex.substring(1)}')),
+                                  color: Color(
+                                    int.parse('0xFF${hex.substring(1)}'),
+                                  ),
                                   shape: BoxShape.circle,
-                                  border: selected ? Border.all(color: AppColors.textPrimary, width: 2) : null,
+                                  border: selected
+                                      ? Border.all(
+                                          color: AppColors.textPrimary,
+                                          width: 2,
+                                        )
+                                      : null,
                                 ),
                               ),
                             ),
@@ -103,13 +150,17 @@ Future<void> showPlanFormSheet(
                       ElevatedButton(
                         onPressed: () async {
                           final repo = ref.read(plansRepositoryProvider);
-                          final target = double.tryParse(targetController.text) ?? 0;
-                          final contribution = double.tryParse(contributionController.text) ?? 0;
+                          final target =
+                              double.tryParse(targetController.text) ?? 0;
+                          final contribution =
+                              double.tryParse(contributionController.text) ?? 0;
                           if (existing == null) {
                             await repo.create(
                               parentPlanId: parentPlanId,
                               name: nameController.text,
-                              description: descController.text.isEmpty ? null : descController.text,
+                              description: descController.text.isEmpty
+                                  ? null
+                                  : descController.text,
                               targetAmount: target,
                               monthlyContribution: contribution,
                               color: selectedColor,
@@ -118,7 +169,9 @@ Future<void> showPlanFormSheet(
                             await repo.update(
                               existing.id,
                               name: nameController.text,
-                              description: descController.text.isEmpty ? null : descController.text,
+                              description: descController.text.isEmpty
+                                  ? null
+                                  : descController.text,
                               targetAmount: target,
                               monthlyContribution: contribution,
                               color: selectedColor,

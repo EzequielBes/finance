@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/screens/categories_screen.dart';
 import 'package:mobile/screens/dashboard_screen.dart';
-import 'package:mobile/screens/income_screen.dart';
+import 'package:mobile/screens/movements_screen.dart';
 import 'package:mobile/screens/plans_screen.dart';
-import 'package:mobile/screens/transactions_screen.dart';
 import 'package:mobile/theme/plan_icons.dart';
 
 class HomeShell extends StatefulWidget {
@@ -18,8 +17,7 @@ class _HomeShellState extends State<HomeShell> {
 
   static const _screens = [
     DashboardScreen(),
-    TransactionsScreen(),
-    IncomeScreen(),
+    MovementsScreen(),
     CategoriesScreen(),
     PlansScreen(),
   ];
@@ -27,17 +25,26 @@ class _HomeShellState extends State<HomeShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_index],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _index,
-        onTap: (i) => setState(() => _index = i),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), label: 'Dashboard'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Transações'),
-          BottomNavigationBarItem(icon: Icon(Icons.trending_up), label: 'Receitas'),
-          BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Categorias'),
-          BottomNavigationBarItem(icon: Icon(planSavingsIcon), label: 'Planos'),
+      body: IndexedStack(index: _index, children: _screens),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _index,
+        onDestinationSelected: (i) => setState(() => _index = i),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.donut_large_outlined),
+            selectedIcon: Icon(Icons.donut_large),
+            label: 'Resumo',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.swap_vert_rounded),
+            label: 'Movimentos',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: Icon(Icons.account_balance_wallet),
+            label: 'Despesas',
+          ),
+          NavigationDestination(icon: Icon(planSavingsIcon), label: 'Planos'),
         ],
       ),
     );

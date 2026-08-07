@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/categories_provider.dart';
 import 'package:mobile/repositories/categories_repository.dart';
 import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/settings/app_settings.dart';
+import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/category_icons.dart';
 import 'package:mobile/widgets/category_form_sheet.dart';
+import 'package:mobile/data/database.dart';
 
 class CategoriesScreen extends ConsumerWidget {
   const CategoriesScreen({super.key});
@@ -13,20 +16,57 @@ class CategoriesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(categoriesProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Categorias')),
+      appBar: AppBar(
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Despesas'),
+            Text(
+              'Limites e uso por categoria',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                letterSpacing: 0,
+              ),
+            ),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showCategoryFormSheet(context, ref),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add_rounded),
       ),
       body: categoriesAsync.when(
-        data: (categories) => ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          itemCount: categories.length,
-          itemBuilder: (ctx, i) => _CategoryCard(
-            item: categories[i],
-            onTap: () => showCategoryFormSheet(context, ref, existing: categories[i].category),
-          ),
-        ),
+        data: (categories) {
+          final expenses = categories
+              .where((item) => item.category.type == CategoryType.expense)
+              .toList();
+          final used = expenses.fold<double>(
+            0,
+            (sum, item) => sum + item.currentMonthUsage,
+          );
+          final limits = expenses.fold<double>(
+            0,
+            (sum, item) => sum + (item.category.monthlyLimit ?? 0),
+          );
+          return ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+            itemCount: expenses.length + 1,
+            itemBuilder: (ctx, i) {
+              if (i == 0) return _ExpenseSummary(used: used, limits: limits);
+              final item = expenses[i - 1];
+              return _CategoryCard(
+                item: item,
+                onTap: () => showCategoryFormSheet(
+                  context,
+                  ref,
+                  existing: item.category,
+                ),
+              );
+            },
+          );
+        },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Erro: $e')),
       ),
@@ -45,7 +85,9 @@ class _CategoryCard extends StatelessWidget {
     final category = item.category;
     final color = Color(int.parse('0xFF${category.color.substring(1)}'));
     final limit = category.monthlyLimit;
-    final percent = limit != null && limit > 0 ? (item.currentMonthUsage / limit * 100) : null;
+    final percent = limit != null && limit > 0
+        ? (item.currentMonthUsage / limit * 100)
+        : null;
 
     Color progressColor = AppColors.accentSuccess;
     if (percent != null) {
@@ -56,14 +98,15 @@ class _CategoryCard extends StatelessWidget {
       }
     }
 
-    return GestureDetector(
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6),
+        margin: const EdgeInsets.symmetric(vertical: 5),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.bgCard,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,7 +116,11 @@ class _CategoryCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 19,
                   backgroundColor: color.withValues(alpha: 0.2),
-                  child: Icon(categoryIconFor(category.icon), color: color, size: 18),
+                  child: Icon(
+                    categoryIconFor(category.icon),
+                    color: color,
+                    size: 18,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -82,20 +129,30 @@ class _CategoryCard extends StatelessWidget {
                     children: [
                       Text(
                         category.name,
-                        style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       Text(
-                        category.type.name == 'expense' ? 'Despesa' : 'Receita',
-                        style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                        limit == null ? 'Sem limite definido' : 'Limite mensal',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Text(
                   limit != null
-                      ? 'R\$${item.currentMonthUsage.toStringAsFixed(0)} / R\$${limit.toStringAsFixed(0)}'
+                      ? '${formatMoney(item.currentMonthUsage, SettingsScope.of(context).currency)} / ${formatMoney(limit, SettingsScope.of(context).currency)}'
                       : 'sem limite',
-                  style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -112,12 +169,83 @@ class _CategoryCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                percent > 100 ? '${percent.toStringAsFixed(0)}% usado — acima do limite' : '${percent.toStringAsFixed(0)}% usado',
+                percent > 100
+                    ? '${percent.toStringAsFixed(0)}% usado — acima do limite'
+                    : '${percent.toStringAsFixed(0)}% usado',
                 style: TextStyle(fontSize: 11, color: progressColor),
               ),
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ExpenseSummary extends StatelessWidget {
+  const _ExpenseSummary({required this.used, required this.limits});
+
+  final double used;
+  final double limits;
+
+  @override
+  Widget build(BuildContext context) {
+    final percent = limits > 0 ? (used / limits * 100) : 0.0;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF30261F), AppColors.bgCard],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.accentPrimary.withValues(alpha: 0.22),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'GASTO NESTE MÊS',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 11,
+              letterSpacing: 0.7,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            formatMoney(used, SettingsScope.of(context).currency),
+            style: const TextStyle(
+              fontSize: 27,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.7,
+            ),
+          ),
+          if (limits > 0) ...[
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(99),
+              child: LinearProgressIndicator(
+                value: (percent / 100).clamp(0, 1),
+                minHeight: 7,
+                color: percent > 90
+                    ? AppColors.accentDanger
+                    : AppColors.accentPrimary,
+                backgroundColor: Colors.white.withValues(alpha: 0.07),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '${percent.toStringAsFixed(0)}% dos limites definidos',
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

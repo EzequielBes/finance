@@ -4,14 +4,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/categories_provider.dart';
 import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/settings/app_settings.dart';
+import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/category_icons.dart';
 
 const _colorPalette = ['#c17a54', '#7a9b7e', '#8a9bb0', '#b8563a'];
 
-Future<void> showCategoryFormSheet(BuildContext context, WidgetRef ref, {Category? existing}) {
+Future<void> showCategoryFormSheet(
+  BuildContext context,
+  WidgetRef ref, {
+  Category? existing,
+}) {
   final nameController = TextEditingController(text: existing?.name ?? '');
   final limitController = TextEditingController(
-    text: existing?.monthlyLimit != null ? existing!.monthlyLimit!.toStringAsFixed(2) : '',
+    text: existing?.monthlyLimit != null
+        ? existing!.monthlyLimit!.toStringAsFixed(2)
+        : '',
   );
   var type = existing?.type ?? CategoryType.expense;
   var selectedColor = existing?.color ?? _colorPalette.first;
@@ -38,9 +46,15 @@ Future<void> showCategoryFormSheet(BuildContext context, WidgetRef ref, {Categor
                 const SizedBox(height: 8),
                 TextField(
                   controller: nameController,
-                  style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: AppColors.textPrimary,
+                  ),
                   decoration: const InputDecoration(
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -48,19 +62,34 @@ Future<void> showCategoryFormSheet(BuildContext context, WidgetRef ref, {Categor
                 const SizedBox(height: 8),
                 DropdownButtonFormField<CategoryType>(
                   initialValue: type,
-                  style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: AppColors.textPrimary,
+                  ),
                   decoration: const InputDecoration(
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                   ),
                   items: CategoryType.values
-                      .map((t) => DropdownMenuItem(value: t, child: Text(t == CategoryType.expense ? 'Despesa' : 'Receita')))
+                      .map(
+                        (t) => DropdownMenuItem(
+                          value: t,
+                          child: Text(
+                            t == CategoryType.expense ? 'Despesa' : 'Receita',
+                          ),
+                        ),
+                      )
                       .toList(),
                   // CategoriesRepository.update() has no `type` parameter, so type is
                   // immutable after creation. Keep the dropdown read-only (onChanged: null)
                   // when editing so it never visually suggests a change that won't be
                   // saved — and so the monthly-limit visibility guard below, which reads
                   // this same `type` variable, can't diverge from what actually persists.
-                  onChanged: existing == null ? (v) => setState(() => type = v!) : null,
+                  onChanged: existing == null
+                      ? (v) => setState(() => type = v!)
+                      : null,
                 ),
                 if (type == CategoryType.expense) ...[
                   const SizedBox(height: 20),
@@ -68,10 +97,20 @@ Future<void> showCategoryFormSheet(BuildContext context, WidgetRef ref, {Categor
                   const SizedBox(height: 8),
                   TextField(
                     controller: limitController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: AppColors.textPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      prefixText:
+                          '${currencySymbol(SettingsScope.of(ctx).currency)} ',
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
                     ),
                   ),
                 ],
@@ -91,7 +130,12 @@ Future<void> showCategoryFormSheet(BuildContext context, WidgetRef ref, {Categor
                           decoration: BoxDecoration(
                             color: Color(int.parse('0xFF${hex.substring(1)}')),
                             shape: BoxShape.circle,
-                            border: selected ? Border.all(color: AppColors.textPrimary, width: 2) : null,
+                            border: selected
+                                ? Border.all(
+                                    color: AppColors.textPrimary,
+                                    width: 2,
+                                  )
+                                : null,
                           ),
                         ),
                       ),
@@ -113,13 +157,22 @@ Future<void> showCategoryFormSheet(BuildContext context, WidgetRef ref, {Categor
                       onTap: () => setState(() => selectedIcon = key),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: selected ? AppColors.accentPrimary.withValues(alpha: 0.2) : AppColors.bgInput,
+                          color: selected
+                              ? AppColors.accentPrimary.withValues(alpha: 0.2)
+                              : AppColors.bgInput,
                           borderRadius: BorderRadius.circular(10),
-                          border: selected ? Border.all(color: AppColors.accentPrimary, width: 1.5) : null,
+                          border: selected
+                              ? Border.all(
+                                  color: AppColors.accentPrimary,
+                                  width: 1.5,
+                                )
+                              : null,
                         ),
                         child: Icon(
                           categoryIconFor(key),
-                          color: selected ? AppColors.accentPrimary : AppColors.textSecondary,
+                          color: selected
+                              ? AppColors.accentPrimary
+                              : AppColors.textSecondary,
                           size: 20,
                         ),
                       ),
@@ -130,13 +183,19 @@ Future<void> showCategoryFormSheet(BuildContext context, WidgetRef ref, {Categor
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                   onPressed: () async {
                     final repo = ref.read(categoriesRepositoryProvider);
                     final limitText = limitController.text.trim();
-                    final limitValue = type == CategoryType.expense && limitText.isNotEmpty
+                    final limitValue =
+                        type == CategoryType.expense && limitText.isNotEmpty
                         ? double.tryParse(limitText)
                         : null;
                     if (existing == null) {

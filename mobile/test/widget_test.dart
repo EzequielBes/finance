@@ -13,9 +13,11 @@ import 'package:mobile/main.dart';
 import 'package:mobile/screens/home_shell.dart';
 
 void main() {
-  testWidgets('App initializes with ProviderScope', (WidgetTester tester) async {
+  testWidgets('App initializes with ProviderScope', (
+    WidgetTester tester,
+  ) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const ProviderScope(child: AnalisadorFinanceiroApp()));
+    await tester.pumpWidget(ProviderScope(child: AnalisadorFinanceiroApp()));
 
     // Dashboard's FutureProviders show an indeterminate CircularProgressIndicator
     // while loading, which pumpAndSettle can never converge against. Pump in

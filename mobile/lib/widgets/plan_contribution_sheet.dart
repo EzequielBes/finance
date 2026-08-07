@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/plans_provider.dart';
 import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/settings/app_settings.dart';
+import 'package:mobile/theme/money_format.dart';
 
 Future<void> showPlanContributionSheet(
   BuildContext context,
@@ -18,7 +20,9 @@ Future<void> showPlanContributionSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: AppColors.bgCard,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
     builder: (ctx) => SafeArea(
       child: Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
@@ -30,24 +34,38 @@ Future<void> showPlanContributionSheet(
             children: [
               Text(
                 isDeposit ? 'Depositar' : 'Retirar',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 autofocus: true,
-                decoration: const InputDecoration(labelText: 'Valor'),
+                decoration: InputDecoration(
+                  labelText: 'Valor',
+                  prefixText:
+                      '${currencySymbol(SettingsScope.of(ctx).currency)} ',
+                ),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isDeposit ? AppColors.accentSuccess : AppColors.accentDanger,
+                  backgroundColor: isDeposit
+                      ? AppColors.accentSuccess
+                      : AppColors.accentDanger,
                 ),
                 onPressed: () async {
                   final amount = double.tryParse(amountController.text) ?? 0;
                   if (amount > 0) {
-                    await ref.read(plansRepositoryProvider).addContribution(
+                    await ref
+                        .read(plansRepositoryProvider)
+                        .addContribution(
                           planId: planId,
                           amount: amount,
                           type: type,
@@ -56,7 +74,9 @@ Future<void> showPlanContributionSheet(
                   }
                   if (ctx.mounted) Navigator.pop(ctx);
                 },
-                child: Text(isDeposit ? 'Confirmar depósito' : 'Confirmar retirada'),
+                child: Text(
+                  isDeposit ? 'Confirmar depósito' : 'Confirmar retirada',
+                ),
               ),
             ],
           ),

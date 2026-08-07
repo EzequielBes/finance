@@ -10,7 +10,14 @@ import 'package:mobile/widgets/transaction_card.dart';
 import 'package:mobile/widgets/transaction_form_sheet.dart';
 
 class TransactionsScreen extends ConsumerStatefulWidget {
-  const TransactionsScreen({super.key});
+  const TransactionsScreen({
+    super.key,
+    this.embedded = false,
+    this.selectedMonth,
+  });
+
+  final bool embedded;
+  final DateTime? selectedMonth;
 
   @override
   ConsumerState<TransactionsScreen> createState() => _TransactionsScreenState();
@@ -27,11 +34,29 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
   Future<void> _load() async {
     final repo = ref.read(transactionsRepositoryProvider);
-    final result = await repo.watchList();
-    setState(() => _items = result.items);
+    final result = await repo.watchList(
+      month: widget.selectedMonth?.month,
+      year: widget.selectedMonth?.year,
+      type: TransactionType.expense,
+    );
+    if (!mounted) return;
+    setState(
+      () => _items = result.items
+          .where((item) => item.type == TransactionType.expense)
+          .toList(),
+    );
   }
 
-  List<TransactionGroup> _groupByInstallment(List<Transaction> items, Map<int, Category> categoriesById) {
+  @override
+  void didUpdateWidget(covariant TransactionsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedMonth != widget.selectedMonth) _load();
+  }
+
+  List<TransactionGroup> _groupByInstallment(
+    List<Transaction> items,
+    Map<int, Category> categoriesById,
+  ) {
     final grouped = <String, List<Transaction>>{};
     final ungrouped = <Transaction>[];
     for (final t in items) {
@@ -43,14 +68,20 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       }
     }
     final groups = <TransactionGroup>[
-      ...grouped.values.map((list) => TransactionGroup(
-            installments: list,
-            category: list.first.categoryId != null ? categoriesById[list.first.categoryId] : null,
-          )),
-      ...ungrouped.map((t) => TransactionGroup(
-            installments: [t],
-            category: t.categoryId != null ? categoriesById[t.categoryId] : null,
-          )),
+      ...grouped.values.map(
+        (list) => TransactionGroup(
+          installments: list,
+          category: list.first.categoryId != null
+              ? categoriesById[list.first.categoryId]
+              : null,
+        ),
+      ),
+      ...ungrouped.map(
+        (t) => TransactionGroup(
+          installments: [t],
+          category: t.categoryId != null ? categoriesById[t.categoryId] : null,
+        ),
+      ),
     ];
     groups.sort((a, b) => b.current.date.compareTo(a.current.date));
     return groups;
@@ -60,21 +91,22 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesProvider);
     final categoriesById = <int, Category>{
-      for (final c in categoriesAsync.value ?? const <CategoryWithUsage>[]) c.category.id: c.category,
+      for (final c in categoriesAsync.value ?? const <CategoryWithUsage>[])
+        c.category.id: c.category,
     };
     final groups = _groupByInstallment(_items, categoriesById);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Transações')),
+      appBar: widget.embedded ? null : AppBar(title: const Text('Transações')),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await showTransactionFormSheet(context, ref);
           _load();
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add_rounded),
       ),
       body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 88),
         itemCount: groups.length,
         itemBuilder: (ctx, i) {
           final group = groups[i];
@@ -85,7 +117,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               children: [
                 SlidableAction(
                   onPressed: (_) async {
-                    await ref.read(transactionsRepositoryProvider).remove(group.current.id);
+                    await ref
+                        .read(transactionsRepositoryProvider)
+                        .remove(group.current.id);
                     _load();
                   },
                   backgroundColor: AppColors.accentDanger,
@@ -98,11 +132,17 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
             child: TransactionCard(
               group: group,
               onTapEdit: (transaction) async {
-                await showTransactionFormSheet(context, ref, existing: transaction);
+                await showTransactionFormSheet(
+                  context,
+                  ref,
+                  existing: transaction,
+                );
                 _load();
               },
               onDelete: () async {
-                await ref.read(transactionsRepositoryProvider).remove(group.current.id);
+                await ref
+                    .read(transactionsRepositoryProvider)
+                    .remove(group.current.id);
                 _load();
               },
             ),

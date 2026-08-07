@@ -5,13 +5,17 @@ import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/categories_provider.dart';
 import 'package:mobile/providers/transactions_provider.dart';
 import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/settings/app_settings.dart';
+import 'package:mobile/theme/money_format.dart';
 
 Future<void> showTransactionFormSheet(
   BuildContext context,
   WidgetRef ref, {
   Transaction? existing,
 }) {
-  final descController = TextEditingController(text: existing?.description ?? '');
+  final descController = TextEditingController(
+    text: existing?.description ?? '',
+  );
   final amountController = TextEditingController(
     text: existing != null ? existing.amount.toStringAsFixed(2) : '',
   );
@@ -32,19 +36,32 @@ Future<void> showTransactionFormSheet(
         final categoriesAsync = consumerRef.watch(categoriesProvider);
         return SafeArea(
           child: Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            ),
             child: StatefulBuilder(
               builder: (ctx, setState) {
                 final categories = categoriesAsync.value ?? [];
                 final filteredCategories = categories
-                    .where((c) => c.category.type == (type == TransactionType.expense ? CategoryType.expense : CategoryType.income))
+                    .where(
+                      (c) =>
+                          c.category.type ==
+                          (type == TransactionType.expense
+                              ? CategoryType.expense
+                              : CategoryType.income),
+                    )
                     .toList();
-                if (categoryId != null && !filteredCategories.any((c) => c.category.id == categoryId)) {
+                if (categoryId != null &&
+                    !filteredCategories.any(
+                      (c) => c.category.id == categoryId,
+                    )) {
                   categoryId = null;
                 }
                 final isExpense = type == TransactionType.expense;
                 final amount = double.tryParse(amountController.text) ?? 0;
-                final perInstallment = installments > 0 ? amount / installments : amount;
+                final perInstallment = installments > 0
+                    ? amount / installments
+                    : amount;
 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
@@ -55,7 +72,9 @@ Future<void> showTransactionFormSheet(
                       _TypeToggle(
                         isExpense: isExpense,
                         onChanged: (expense) => setState(() {
-                          type = expense ? TransactionType.expense : TransactionType.income;
+                          type = expense
+                              ? TransactionType.expense
+                              : TransactionType.income;
                         }),
                       ),
                       const SizedBox(height: 24),
@@ -63,9 +82,15 @@ Future<void> showTransactionFormSheet(
                       const SizedBox(height: 8),
                       TextField(
                         controller: descController,
-                        style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: AppColors.textPrimary,
+                        ),
                         decoration: const InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -73,10 +98,19 @@ Future<void> showTransactionFormSheet(
                       const SizedBox(height: 8),
                       TextField(
                         controller: amountController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
-                        decoration: const InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: AppColors.textPrimary,
+                        ),
+                        decoration: InputDecoration(
+                          prefixText: '${currencySymbol(SettingsScope.of(ctx).currency)} ',
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
                         ),
                         onChanged: (_) => setState(() {}),
                       ),
@@ -85,12 +119,21 @@ Future<void> showTransactionFormSheet(
                       const SizedBox(height: 8),
                       DropdownButtonFormField<int?>(
                         initialValue: categoryId,
-                        style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: AppColors.textPrimary,
+                        ),
                         decoration: const InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
                         ),
                         items: [
-                          const DropdownMenuItem<int?>(value: null, child: Text('Sem categoria')),
+                          const DropdownMenuItem<int?>(
+                            value: null,
+                            child: Text('Sem categoria'),
+                          ),
                           ...filteredCategories.map(
                             (c) => DropdownMenuItem<int?>(
                               value: c.category.id,
@@ -102,7 +145,11 @@ Future<void> showTransactionFormSheet(
                                     height: 12,
                                     margin: const EdgeInsets.only(right: 10),
                                     decoration: BoxDecoration(
-                                      color: Color(int.parse('0xFF${c.category.color.substring(1)}')),
+                                      color: Color(
+                                        int.parse(
+                                          '0xFF${c.category.color.substring(1)}',
+                                        ),
+                                      ),
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -113,6 +160,29 @@ Future<void> showTransactionFormSheet(
                           ),
                         ],
                         onChanged: (v) => setState(() => categoryId = v),
+                      ),
+                      const SizedBox(height: 20),
+                      _FieldLabel('Data'),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: ctx,
+                            initialDate: date,
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                          );
+                          if (picked != null) setState(() => date = picked);
+                        },
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            suffixIcon: Icon(Icons.calendar_today_outlined),
+                          ),
+                          child: Text(
+                            '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
+                          ),
+                        ),
                       ),
                       if (existing == null) ...[
                         const SizedBox(height: 20),
@@ -126,12 +196,18 @@ Future<void> showTransactionFormSheet(
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
                         onPressed: () async {
                           final repo = ref.read(transactionsRepositoryProvider);
-                          final savedAmount = double.tryParse(amountController.text) ?? 0;
+                          final savedAmount =
+                              double.tryParse(amountController.text) ?? 0;
                           if (existing == null) {
                             await repo.create(
                               description: descController.text,
@@ -139,7 +215,9 @@ Future<void> showTransactionFormSheet(
                               date: date,
                               type: type,
                               categoryId: categoryId,
-                              installmentsTotal: installments > 1 ? installments : null,
+                              installmentsTotal: installments > 1
+                                  ? installments
+                                  : null,
                             );
                           } else {
                             await repo.update(
@@ -211,7 +289,9 @@ class _TypeToggle extends StatelessWidget {
                 duration: const Duration(milliseconds: 280),
                 curve: Curves.easeOutCubic,
                 decoration: BoxDecoration(
-                  color: isExpense ? AppColors.accentDanger : AppColors.accentSuccess,
+                  color: isExpense
+                      ? AppColors.accentDanger
+                      : AppColors.accentSuccess,
                   borderRadius: BorderRadius.circular(11),
                 ),
               ),
@@ -275,7 +355,13 @@ class _ToggleOption extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(icon, size: 16, color: active ? AppColors.bgPrimary : AppColors.textSecondary),
+                  Icon(
+                    icon,
+                    size: 16,
+                    color: active
+                        ? AppColors.bgPrimary
+                        : AppColors.textSecondary,
+                  ),
                   const SizedBox(width: 6),
                   Text(label),
                 ],
@@ -333,15 +419,20 @@ class _InstallmentsCard extends StatelessWidget {
               const Spacer(),
               if (installments > 1)
                 Text(
-                  'de R\$${perInstallment.toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  'de ${formatMoney(perInstallment, SettingsScope.of(context).currency)}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
             ],
           ),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               activeTrackColor: AppColors.accentPrimary,
-              inactiveTrackColor: AppColors.accentPrimary.withValues(alpha: 0.2),
+              inactiveTrackColor: AppColors.accentPrimary.withValues(
+                alpha: 0.2,
+              ),
               thumbColor: AppColors.accentPrimary,
               overlayColor: AppColors.accentPrimary.withValues(alpha: 0.15),
               trackHeight: 6,
@@ -360,8 +451,20 @@ class _InstallmentsCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
-                Text('1x', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                Text('24x', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                Text(
+                  '1x',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                Text(
+                  '24x',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ],
             ),
           ),

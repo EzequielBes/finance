@@ -1,7 +1,8 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/settings/app_settings.dart';
+import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/category_icons.dart';
 
 class TransactionGroup {
@@ -42,30 +43,23 @@ class TransactionCard extends StatefulWidget {
 
 class _TransactionCardState extends State<TransactionCard> {
   bool _expanded = false;
-  Timer? _longPressTimer;
 
-  void _handleLongPressStart(LongPressStartDetails details) {
-    _longPressTimer = Timer(const Duration(milliseconds: 1500), _onLongPress);
-  }
-
-  void _handleLongPressEnd(LongPressEndDetails details) {
-    _longPressTimer?.cancel();
-  }
-
-  Future<void> _onLongPress() async {
+  Future<void> _edit() async {
     final group = widget.group;
     if (!group.isInstallmentGroup) {
       widget.onTapEdit(group.current);
       return;
     }
-    final sorted = [...group.installments]..sort((a, b) => a.date.compareTo(b.date));
+    final sorted = [...group.installments]
+      ..sort((a, b) => a.date.compareTo(b.date));
     final chosen = await showDialog<Transaction>(
       context: context,
       builder: (ctx) => SimpleDialog(
         title: const Text('Qual parcela editar?'),
         children: sorted.map((t) {
-          final label = '${t.installmentsCurrent}/${t.installmentsTotal} — '
-              '${t.date.day}/${t.date.month} — R\$${t.amount.toStringAsFixed(2)}';
+          final label =
+              '${t.installmentsCurrent}/${t.installmentsTotal} — '
+              '${t.date.day}/${t.date.month} — ${formatMoney(t.amount, SettingsScope.of(context).currency)}';
           return SimpleDialogOption(
             onPressed: () => Navigator.pop(ctx, t),
             child: Text(label),
@@ -74,12 +68,6 @@ class _TransactionCardState extends State<TransactionCard> {
       ),
     );
     if (chosen != null) widget.onTapEdit(chosen);
-  }
-
-  @override
-  void dispose() {
-    _longPressTimer?.cancel();
-    super.dispose();
   }
 
   @override
@@ -92,33 +80,38 @@ class _TransactionCardState extends State<TransactionCard> {
         : AppColors.textPrimary;
     final isExpense = current.type == TransactionType.expense;
 
-    final sorted = [...group.installments]..sort((a, b) => a.date.compareTo(b.date));
+    final sorted = [...group.installments]
+      ..sort((a, b) => a.date.compareTo(b.date));
 
     return Column(
       children: [
-        GestureDetector(
-          onTap: group.isInstallmentGroup ? () => setState(() => _expanded = !_expanded) : null,
-          onLongPressStart: _handleLongPressStart,
-          onLongPressEnd: _handleLongPressEnd,
-          onLongPressCancel: () => _longPressTimer?.cancel(),
+        InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: group.isInstallmentGroup
+              ? () => setState(() => _expanded = !_expanded)
+              : null,
           child: Container(
             decoration: BoxDecoration(
               color: AppColors.bgCard,
               borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(12),
-                topRight: const Radius.circular(12),
-                bottomLeft: Radius.circular(_expanded ? 0 : 12),
-                bottomRight: Radius.circular(_expanded ? 0 : 12),
+                topLeft: const Radius.circular(16),
+                topRight: const Radius.circular(16),
+                bottomLeft: Radius.circular(_expanded ? 0 : 16),
+                bottomRight: Radius.circular(_expanded ? 0 : 16),
               ),
             ),
-            margin: const EdgeInsets.symmetric(vertical: 6),
+            margin: const EdgeInsets.symmetric(vertical: 5),
             padding: const EdgeInsets.all(14),
             child: Row(
               children: [
                 CircleAvatar(
                   radius: 21,
                   backgroundColor: avatarColor.withValues(alpha: 0.2),
-                  child: Icon(categoryIconFor(category?.icon), color: avatarColor, size: 20),
+                  child: Icon(
+                    categoryIconFor(category?.icon),
+                    color: avatarColor,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -131,20 +124,33 @@ class _TransactionCardState extends State<TransactionCard> {
                             child: Text(
                               current.description,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
                           ),
                           if (group.isInstallmentGroup) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
-                                color: AppColors.accentPrimary.withValues(alpha: 0.18),
+                                color: AppColors.accentPrimary.withValues(
+                                  alpha: 0.18,
+                                ),
                                 borderRadius: BorderRadius.circular(999),
                               ),
                               child: Text(
                                 '${current.installmentsCurrent}/${current.installmentsTotal}',
-                                style: const TextStyle(color: AppColors.accentPrimary, fontSize: 11, fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                  color: AppColors.accentPrimary,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
@@ -155,18 +161,36 @@ class _TransactionCardState extends State<TransactionCard> {
                         category != null
                             ? '${category.name} · ${current.date.day}/${current.date.month}'
                             : '${current.date.day}/${current.date.month}',
-                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12.5,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Text(
-                  'R\$${current.amount.toStringAsFixed(2)}',
+                  '− ${formatMoney(current.amount, SettingsScope.of(context).currency)}',
                   style: TextStyle(
-                    color: isExpense ? AppColors.accentDanger : AppColors.accentSuccess,
+                    color: isExpense
+                        ? AppColors.accentDanger
+                        : AppColors.accentSuccess,
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),
+                ),
+                PopupMenuButton<String>(
+                  tooltip: 'Opções da transação',
+                  icon: const Icon(
+                    Icons.more_vert,
+                    color: AppColors.textSecondary,
+                  ),
+                  onSelected: (value) =>
+                      value == 'edit' ? _edit() : widget.onDelete(),
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(value: 'edit', child: Text('Editar')),
+                    PopupMenuItem(value: 'delete', child: Text('Excluir')),
+                  ],
                 ),
               ],
             ),
@@ -176,7 +200,10 @@ class _TransactionCardState extends State<TransactionCard> {
           Container(
             decoration: const BoxDecoration(
               color: AppColors.bgInput,
-              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12)),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
             ),
             margin: const EdgeInsets.only(bottom: 4),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -187,12 +214,21 @@ class _TransactionCardState extends State<TransactionCard> {
                 final isCurrent = t == current;
                 final statusColor = isCurrent
                     ? AppColors.accentPrimary
-                    : (isPaid ? AppColors.accentSuccess : AppColors.textSecondary);
+                    : (isPaid
+                          ? AppColors.accentSuccess
+                          : AppColors.textSecondary);
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
                     children: [
-                      Container(width: 6, height: 6, decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle)),
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: statusColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -200,7 +236,13 @@ class _TransactionCardState extends State<TransactionCard> {
                           style: TextStyle(color: statusColor, fontSize: 12.5),
                         ),
                       ),
-                      Text('R\$${t.amount.toStringAsFixed(2)}', style: TextStyle(color: statusColor, fontSize: 12.5)),
+                      Text(
+                        formatMoney(
+                          t.amount,
+                          SettingsScope.of(context).currency,
+                        ),
+                        style: TextStyle(color: statusColor, fontSize: 12.5),
+                      ),
                     ],
                   ),
                 );
