@@ -126,4 +126,23 @@ void main() {
     final sub = await (db.select(db.plans)..where((p) => p.id.equals(subId))).getSingle();
     expect(sub.parentPlanId, parentId);
   });
+
+  test('new categories default to isActive true', () async {
+    final id = await db.into(db.categories).insert(
+      CategoriesCompanion.insert(
+        name: 'Lazer',
+        type: CategoryType.expense,
+        color: '#c17a54',
+        icon: 'tag',
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+      ),
+    );
+    final row = await (db.select(db.categories)..where((c) => c.id.equals(id))).getSingle();
+    expect(row.isActive, true);
+  });
+
+  test('schemaVersion is 3', () {
+    expect(db.schemaVersion, 3);
+  });
 }

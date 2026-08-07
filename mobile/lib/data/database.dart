@@ -23,6 +23,7 @@ class Categories extends Table {
   TextColumn get color => text()();
   TextColumn get icon => text()();
   RealColumn get monthlyLimit => real().nullable()();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 }
@@ -91,7 +92,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase({QueryExecutor? executor}) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -102,6 +103,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 2) {
         await m.createTable(plans);
         await m.createTable(planContributions);
+      }
+      if (from < 3) {
+        await m.addColumn(categories, categories.isActive);
       }
     },
   );

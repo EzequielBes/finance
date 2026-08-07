@@ -69,6 +69,21 @@ class $CategoriesTable extends Categories
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -99,6 +114,7 @@ class $CategoriesTable extends Categories
     color,
     icon,
     monthlyLimit,
+    isActive,
     createdAt,
     updatedAt,
   ];
@@ -148,6 +164,12 @@ class $CategoriesTable extends Categories
           data['monthly_limit']!,
           _monthlyLimitMeta,
         ),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -201,6 +223,10 @@ class $CategoriesTable extends Categories
         DriftSqlType.double,
         data['${effectivePrefix}monthly_limit'],
       ),
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -228,6 +254,7 @@ class Category extends DataClass implements Insertable<Category> {
   final String color;
   final String icon;
   final double? monthlyLimit;
+  final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Category({
@@ -237,6 +264,7 @@ class Category extends DataClass implements Insertable<Category> {
     required this.color,
     required this.icon,
     this.monthlyLimit,
+    required this.isActive,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -255,6 +283,7 @@ class Category extends DataClass implements Insertable<Category> {
     if (!nullToAbsent || monthlyLimit != null) {
       map['monthly_limit'] = Variable<double>(monthlyLimit);
     }
+    map['is_active'] = Variable<bool>(isActive);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -270,6 +299,7 @@ class Category extends DataClass implements Insertable<Category> {
       monthlyLimit: monthlyLimit == null && nullToAbsent
           ? const Value.absent()
           : Value(monthlyLimit),
+      isActive: Value(isActive),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -289,6 +319,7 @@ class Category extends DataClass implements Insertable<Category> {
       color: serializer.fromJson<String>(json['color']),
       icon: serializer.fromJson<String>(json['icon']),
       monthlyLimit: serializer.fromJson<double?>(json['monthlyLimit']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -305,6 +336,7 @@ class Category extends DataClass implements Insertable<Category> {
       'color': serializer.toJson<String>(color),
       'icon': serializer.toJson<String>(icon),
       'monthlyLimit': serializer.toJson<double?>(monthlyLimit),
+      'isActive': serializer.toJson<bool>(isActive),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -317,6 +349,7 @@ class Category extends DataClass implements Insertable<Category> {
     String? color,
     String? icon,
     Value<double?> monthlyLimit = const Value.absent(),
+    bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Category(
@@ -326,6 +359,7 @@ class Category extends DataClass implements Insertable<Category> {
     color: color ?? this.color,
     icon: icon ?? this.icon,
     monthlyLimit: monthlyLimit.present ? monthlyLimit.value : this.monthlyLimit,
+    isActive: isActive ?? this.isActive,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -339,6 +373,7 @@ class Category extends DataClass implements Insertable<Category> {
       monthlyLimit: data.monthlyLimit.present
           ? data.monthlyLimit.value
           : this.monthlyLimit,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -353,6 +388,7 @@ class Category extends DataClass implements Insertable<Category> {
           ..write('color: $color, ')
           ..write('icon: $icon, ')
           ..write('monthlyLimit: $monthlyLimit, ')
+          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -367,6 +403,7 @@ class Category extends DataClass implements Insertable<Category> {
     color,
     icon,
     monthlyLimit,
+    isActive,
     createdAt,
     updatedAt,
   );
@@ -380,6 +417,7 @@ class Category extends DataClass implements Insertable<Category> {
           other.color == this.color &&
           other.icon == this.icon &&
           other.monthlyLimit == this.monthlyLimit &&
+          other.isActive == this.isActive &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -391,6 +429,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<String> color;
   final Value<String> icon;
   final Value<double?> monthlyLimit;
+  final Value<bool> isActive;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const CategoriesCompanion({
@@ -400,6 +439,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.color = const Value.absent(),
     this.icon = const Value.absent(),
     this.monthlyLimit = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -410,6 +450,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     required String color,
     required String icon,
     this.monthlyLimit = const Value.absent(),
+    this.isActive = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : name = Value(name),
@@ -425,6 +466,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     Expression<String>? color,
     Expression<String>? icon,
     Expression<double>? monthlyLimit,
+    Expression<bool>? isActive,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -435,6 +477,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       if (color != null) 'color': color,
       if (icon != null) 'icon': icon,
       if (monthlyLimit != null) 'monthly_limit': monthlyLimit,
+      if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -447,6 +490,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     Value<String>? color,
     Value<String>? icon,
     Value<double?>? monthlyLimit,
+    Value<bool>? isActive,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
   }) {
@@ -457,6 +501,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       color: color ?? this.color,
       icon: icon ?? this.icon,
       monthlyLimit: monthlyLimit ?? this.monthlyLimit,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -485,6 +530,9 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     if (monthlyLimit.present) {
       map['monthly_limit'] = Variable<double>(monthlyLimit.value);
     }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -503,6 +551,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
           ..write('color: $color, ')
           ..write('icon: $icon, ')
           ..write('monthlyLimit: $monthlyLimit, ')
+          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -3188,6 +3237,7 @@ typedef $$CategoriesTableCreateCompanionBuilder =
       required String color,
       required String icon,
       Value<double?> monthlyLimit,
+      Value<bool> isActive,
       required DateTime createdAt,
       required DateTime updatedAt,
     });
@@ -3199,6 +3249,7 @@ typedef $$CategoriesTableUpdateCompanionBuilder =
       Value<String> color,
       Value<String> icon,
       Value<double?> monthlyLimit,
+      Value<bool> isActive,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -3263,6 +3314,11 @@ class $$CategoriesTableFilterComposer
 
   ColumnFilters<double> get monthlyLimit => $composableBuilder(
     column: $table.monthlyLimit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3341,6 +3397,11 @@ class $$CategoriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -3380,6 +3441,9 @@ class $$CategoriesTableAnnotationComposer
     column: $table.monthlyLimit,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -3447,6 +3511,7 @@ class $$CategoriesTableTableManager
                 Value<String> color = const Value.absent(),
                 Value<String> icon = const Value.absent(),
                 Value<double?> monthlyLimit = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => CategoriesCompanion(
@@ -3456,6 +3521,7 @@ class $$CategoriesTableTableManager
                 color: color,
                 icon: icon,
                 monthlyLimit: monthlyLimit,
+                isActive: isActive,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -3467,6 +3533,7 @@ class $$CategoriesTableTableManager
                 required String color,
                 required String icon,
                 Value<double?> monthlyLimit = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
               }) => CategoriesCompanion.insert(
@@ -3476,6 +3543,7 @@ class $$CategoriesTableTableManager
                 color: color,
                 icon: icon,
                 monthlyLimit: monthlyLimit,
+                isActive: isActive,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
