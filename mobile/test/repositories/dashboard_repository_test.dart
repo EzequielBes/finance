@@ -4,6 +4,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/repositories/dashboard_repository.dart';
+import 'package:mobile/repositories/plans_repository.dart';
 
 void main() {
   late AppDatabase db;
@@ -11,7 +12,7 @@ void main() {
 
   setUp(() {
     db = AppDatabase(executor: NativeDatabase.memory());
-    repo = DashboardRepository(db);
+    repo = DashboardRepository(db, PlansRepository(db));
   });
 
   tearDown(() async => db.close());
@@ -114,5 +115,133 @@ void main() {
     expect(summary.byCategory[0].percent, 75.0);
     expect(summary.byCategory[1].name, 'Compras');
     expect(summary.byCategory[1].percent, 25.0);
+  });
+
+  test('getTimeline excludes transactions outside the window', () async {
+    final now = DateTime.now();
+    await db.into(db.transactions).insert(
+      TransactionsCompanion.insert(
+        description: 'Passada', amount: 50.0, date: now.subtract(const Duration(days: 5)),
+        type: TransactionType.expense, createdAt: now, updatedAt: now,
+      ),
+    );
+    await db.into(db.transactions).insert(
+      TransactionsCompanion.insert(
+        description: 'Muito no futuro', amount: 50.0, date: DateTime(now.year, now.month + 8, now.day),
+        type: TransactionType.expense, createdAt: now, updatedAt: now,
+      ),
+    );
+
+    final events = await repo.getTimeline();
+
+    expect(events, isEmpty);
+  });
+
+  test('getTimeline includes a transaction inside the window with correct fields', () async {
+    final now = DateTime.now();
+    final catId = await db.into(db.categories).insert(
+      CategoriesCompanion.insert(
+        name: 'Lazer', type: CategoryType.expense, color: '#c17a54', icon: 'tag',
+        createdAt: now, updatedAt: now,
+      ),
+    );
+    final futureDate = now.add(const Duration(days: 10));
+    await db.into(db.transactions).insert(
+      TransactionsCompanion.insert(
+        categoryId: Value(catId), description: 'Cinema agendado', amount: 80.0, date: futureDate,
+        type: TransactionType.expense, isRecurring: const Value(true), createdAt: now, updatedAt: now,
+      ),
+    );
+
+    final events = await repo.getTimeline();
+
+    expect(events.length, 1);
+    final event = events.first as TransactionTimelineEvent;
+    expect(event.title, 'Cinema agendado');
+    expect(event.amount, 80.0);
+    expect(event.categoryName, 'Lazer');
+    expect(event.isRecurring, true);
+  });
+
+  test('getTimeline uses plan deadline when set, ignoring the simulated date', () async {
+    final now = DateTime.now();
+    final deadline = now.add(const Duration(days: 30));
+    final planId = await db.into(db.plans).insert(
+      PlansCompanion.insert(
+        name: 'Viagem', targetAmount: 10000.0, monthlyContribution: 100.0,
+        deadline: Value(deadline), color: '#c17a54', createdAt: now, updatedAt: now,
+      ),
+    );
+
+    final events = await repo.getTimeline();
+
+    expect(events.length, 1);
+    final event = events.first as PlanMilestoneTimelineEvent;
+    expect(event.id, planId);
+    expect(event.planName, 'Viagem');
+    expect(event.date.year, deadline.year);
+    expect(event.date.month, deadline.month);
+    expect(event.date.day, deadline.day);
+  });
+
+  test('getTimeline uses the simulated estimated date when plan has no deadline', () async {
+    final now = DateTime.now();
+    await db.into(db.plans).insert(
+      PlansCompanion.insert(
+        name: 'Notebook', targetAmount: 1000.0, currentSavings: const Value(0.0),
+        monthlyContribution: 500.0, color: '#c17a54', createdAt: now, updatedAt: now,
+      ),
+    );
+
+    final events = await repo.getTimeline();
+
+    // remaining=1000, monthlyContribution=500 -> months=ceil(2)=2, dentro da janela de 6 meses.
+    expect(events.length, 1);
+    expect(events.first, isA<PlanMilestoneTimelineEvent>());
+  });
+
+  test('getTimeline excludes plans with status completed or cancelled', () async {
+    final now = DateTime.now();
+    await db.into(db.plans).insert(
+      PlansCompanion.insert(
+        name: 'Concluído', targetAmount: 100.0, currentSavings: const Value(100.0),
+        monthlyContribution: 50.0, status: Value(PlanStatus.completed),
+        color: '#c17a54', createdAt: now, updatedAt: now,
+      ),
+    );
+    await db.into(db.plans).insert(
+      PlansCompanion.insert(
+        name: 'Cancelado', targetAmount: 100.0, monthlyContribution: 50.0,
+        status: Value(PlanStatus.cancelled), color: '#c17a54', createdAt: now, updatedAt: now,
+      ),
+    );
+
+    final events = await repo.getTimeline();
+
+    expect(events, isEmpty);
+  });
+
+  test('getTimeline returns events sorted by date ascending, mixing both types', () async {
+    final now = DateTime.now();
+    final earlyDate = now.add(const Duration(days: 5));
+    final lateDate = now.add(const Duration(days: 60));
+
+    await db.into(db.plans).insert(
+      PlansCompanion.insert(
+        name: 'Plano tardio', targetAmount: 100.0, monthlyContribution: 100.0,
+        deadline: Value(lateDate), color: '#c17a54', createdAt: now, updatedAt: now,
+      ),
+    );
+    await db.into(db.transactions).insert(
+      TransactionsCompanion.insert(
+        description: 'Transação cedo', amount: 10.0, date: earlyDate,
+        type: TransactionType.expense, createdAt: now, updatedAt: now,
+      ),
+    );
+
+    final events = await repo.getTimeline();
+
+    expect(events.length, 2);
+    expect(events[0].date.isBefore(events[1].date), true);
   });
 }

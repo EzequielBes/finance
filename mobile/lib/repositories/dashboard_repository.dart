@@ -1,5 +1,52 @@
 import 'package:drift/drift.dart';
 import 'package:mobile/data/database.dart';
+import 'package:mobile/repositories/plans_repository.dart';
+
+abstract class TimelineEvent {
+  DateTime get date;
+}
+
+class TransactionTimelineEvent extends TimelineEvent {
+  TransactionTimelineEvent({
+    required this.id,
+    required this.title,
+    required this.amount,
+    required this.date,
+    required this.categoryName,
+    required this.transactionType,
+    required this.isRecurring,
+    required this.installmentsTotal,
+  });
+
+  final int id;
+  final String title;
+  final double amount;
+  @override
+  final DateTime date;
+  final String? categoryName;
+  final TransactionType transactionType;
+  final bool isRecurring;
+  final int? installmentsTotal;
+}
+
+class PlanMilestoneTimelineEvent extends TimelineEvent {
+  PlanMilestoneTimelineEvent({
+    required this.id,
+    required this.title,
+    required this.targetAmount,
+    required this.date,
+    required this.planName,
+    required this.status,
+  });
+
+  final int id;
+  final String title;
+  final double targetAmount;
+  @override
+  final DateTime date;
+  final String planName;
+  final PlanStatus status;
+}
 
 class CategoryExpenseSummary {
   CategoryExpenseSummary({
@@ -34,8 +81,9 @@ class DashboardSummary {
 }
 
 class DashboardRepository {
-  DashboardRepository(this.db);
+  DashboardRepository(this.db, this.plansRepository);
   final AppDatabase db;
+  final PlansRepository plansRepository;
 
   Future<DashboardSummary> getSummary({int? month, int? year}) async {
     final now = DateTime.now();
@@ -90,5 +138,57 @@ class DashboardRepository {
       savingsPercent: savingsPercent,
       byCategory: byCategory,
     );
+  }
+
+  Future<List<TimelineEvent>> getTimeline({int monthsAhead = 6}) async {
+    final now = DateTime.now();
+    final cutoff = DateTime(now.year, now.month + monthsAhead, now.day);
+    final events = <TimelineEvent>[];
+
+    final txs = await (db.select(db.transactions)
+          ..where((t) => t.date.isBiggerOrEqualValue(now) & t.date.isSmallerOrEqualValue(cutoff)))
+        .get();
+    final categories = await db.select(db.categories).get();
+    final categoriesById = {for (final c in categories) c.id: c};
+
+    for (final t in txs) {
+      final categoryName = t.categoryId != null ? categoriesById[t.categoryId]?.name : null;
+      events.add(TransactionTimelineEvent(
+        id: t.id,
+        title: t.description,
+        amount: t.amount,
+        date: t.date,
+        categoryName: categoryName,
+        transactionType: t.type,
+        isRecurring: t.isRecurring,
+        installmentsTotal: t.installmentsTotal,
+      ));
+    }
+
+    final plans = await (db.select(db.plans)
+          ..where((p) => p.status.equalsValue(PlanStatus.active) | p.status.equalsValue(PlanStatus.paused)))
+        .get();
+    for (final plan in plans) {
+      final simulation = await plansRepository.simulate(
+        targetAmount: plan.targetAmount,
+        currentSavings: plan.currentSavings,
+        monthlyContribution: plan.monthlyContribution,
+        referenceDate: now,
+      );
+      final targetDate = plan.deadline ?? simulation.estimatedDate;
+      if (targetDate == null) continue;
+      if (targetDate.isBefore(now) || targetDate.isAfter(cutoff)) continue;
+      events.add(PlanMilestoneTimelineEvent(
+        id: plan.id,
+        title: plan.name,
+        targetAmount: plan.targetAmount,
+        date: targetDate,
+        planName: plan.name,
+        status: plan.status,
+      ));
+    }
+
+    events.sort((a, b) => a.date.compareTo(b.date));
+    return events;
   }
 }
