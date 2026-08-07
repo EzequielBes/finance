@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/screens/categories_screen.dart';
 import 'package:mobile/screens/income_screen.dart';
+import 'package:mobile/screens/plans_screen.dart';
 import 'package:mobile/screens/transactions_screen.dart';
+import 'package:mobile/theme/plan_icons.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -17,6 +19,7 @@ class _HomeShellState extends State<HomeShell> {
     TransactionsScreen(),
     IncomeScreen(),
     CategoriesScreen(),
+    PlansScreen(),
   ];
 
   @override
@@ -30,6 +33,7 @@ class _HomeShellState extends State<HomeShell> {
           BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Transações'),
           BottomNavigationBarItem(icon: Icon(Icons.trending_up), label: 'Receitas'),
           BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Categorias'),
+          BottomNavigationBarItem(icon: Icon(planSavingsIcon), label: 'Planos'),
         ],
       ),
     );
