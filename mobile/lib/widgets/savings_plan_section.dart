@@ -24,6 +24,19 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
   List<SavingsCandidate> _allCandidates = [];
   final Map<int, SuggestedCut> _selectedCuts = {};
   PlanSimulation? _newSimulation;
+  late final TextEditingController _targetPercentController;
+
+  @override
+  void initState() {
+    super.initState();
+    _targetPercentController = TextEditingController(text: _targetPercent.toStringAsFixed(0));
+  }
+
+  @override
+  void dispose() {
+    _targetPercentController.dispose();
+    super.dispose();
+  }
 
   Future<void> _loadCandidates() async {
     final repo = ref.read(savingsAnalysisRepositoryProvider);
@@ -116,7 +129,7 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
               SizedBox(
                 width: 50,
                 child: TextField(
-                  controller: TextEditingController(text: _targetPercent.toStringAsFixed(0)),
+                  controller: _targetPercentController,
                   keyboardType: TextInputType.number,
                   style: const TextStyle(color: AppColors.accentPrimary, fontWeight: FontWeight.w700, fontSize: 16),
                   decoration: const InputDecoration(border: InputBorder.none, isDense: true),
