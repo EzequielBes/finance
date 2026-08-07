@@ -1,5 +1,4 @@
 // mobile/lib/repositories/backup_repository.dart
-import 'package:drift/drift.dart';
 import 'package:mobile/data/database.dart';
 
 class BackupVersionMismatch implements Exception {

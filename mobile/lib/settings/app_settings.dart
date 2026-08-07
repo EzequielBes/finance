@@ -12,21 +12,17 @@ enum DecimalSeparator { comma, dot }
 
 class AppSettings extends ChangeNotifier {
   AppSettings({
-    AppCurrency currency = AppCurrency.brl,
-    AppDateFormat dateFormat = AppDateFormat.dmy,
-    DecimalSeparator decimalSeparator = DecimalSeparator.comma,
-  }) : _currency = currency,
-       _dateFormat = dateFormat,
-       _decimalSeparator = decimalSeparator;
+    this._currency = AppCurrency.brl,
+    this._dateFormat = AppDateFormat.dmy,
+    this._decimalSeparator = DecimalSeparator.comma,
+  });
 
   AppSettings.forFile(
     this._file, {
-    AppCurrency currency = AppCurrency.brl,
-    AppDateFormat dateFormat = AppDateFormat.dmy,
-    DecimalSeparator decimalSeparator = DecimalSeparator.comma,
-  }) : _currency = currency,
-       _dateFormat = dateFormat,
-       _decimalSeparator = decimalSeparator;
+    this._currency = AppCurrency.brl,
+    this._dateFormat = AppDateFormat.dmy,
+    this._decimalSeparator = DecimalSeparator.comma,
+  });
 
   AppCurrency _currency;
   AppDateFormat _dateFormat;

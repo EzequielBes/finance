@@ -92,5 +92,11 @@ Future<void> restoreBackup(BuildContext context, WidgetRef ref) async {
         ),
       );
     }
+  } catch (_) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Arquivo de backup inválido.')),
+      );
+    }
   }
 }
