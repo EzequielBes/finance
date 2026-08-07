@@ -16,7 +16,15 @@ void main() {
   testWidgets('App initializes with ProviderScope', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const ProviderScope(child: AnalisadorFinanceiroApp()));
-    await tester.pump();
+
+    // Dashboard's FutureProviders show an indeterminate CircularProgressIndicator
+    // while loading, which pumpAndSettle can never converge against. Pump in
+    // bounded steps instead, so the test still exercises the async resolution
+    // path (and would fail on a provider error) without hanging forever.
+    for (var i = 0; i < 20; i++) {
+      if (find.byType(CircularProgressIndicator).evaluate().isEmpty) break;
+      await tester.pump(const Duration(milliseconds: 100));
+    }
 
     // Verify that the app renders MaterialApp and the home screen (HomeShell).
     expect(find.byType(MaterialApp), findsOneWidget);
