@@ -20,18 +20,20 @@ class IncomeRepository {
     String? notes,
   }) {
     final now = DateTime.now();
-    return db.into(db.incomeEntries).insert(
-      IncomeEntriesCompanion.insert(
-        amount: amount,
-        date: date,
-        source: source,
-        isRecurring: Value(isRecurring),
-        recurrencePeriod: Value(recurrencePeriod),
-        notes: Value(notes),
-        createdAt: now,
-        updatedAt: now,
-      ),
-    );
+    return db
+        .into(db.incomeEntries)
+        .insert(
+          IncomeEntriesCompanion.insert(
+            amount: amount,
+            date: date,
+            source: source,
+            isRecurring: Value(isRecurring),
+            recurrencePeriod: Value(recurrencePeriod),
+            notes: Value(notes),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
   }
 
   Future<void> update(
@@ -61,11 +63,17 @@ class IncomeRepository {
     if (year != null && month != null) {
       final start = DateTime(year, month, 1);
       final end = DateTime(year, month + 1, 1);
-      query.where((e) => e.date.isBiggerOrEqualValue(start) & e.date.isSmallerThanValue(end));
+      query.where(
+        (e) =>
+            e.date.isBiggerOrEqualValue(start) & e.date.isSmallerThanValue(end),
+      );
     } else if (year != null) {
       final start = DateTime(year, 1, 1);
       final end = DateTime(year + 1, 1, 1);
-      query.where((e) => e.date.isBiggerOrEqualValue(start) & e.date.isSmallerThanValue(end));
+      query.where(
+        (e) =>
+            e.date.isBiggerOrEqualValue(start) & e.date.isSmallerThanValue(end),
+      );
     }
     query.orderBy([(e) => OrderingTerm.desc(e.date)]);
     return query.get();
@@ -76,17 +84,29 @@ class IncomeRepository {
     final monthStart = DateTime(now.year, now.month, 1);
     final threeMonthsAgo = DateTime(now.year, now.month - 3, now.day);
 
-    final thisMonthRows = await (db.select(db.incomeEntries)
-          ..where((e) => e.date.isBiggerOrEqualValue(monthStart) & e.date.isSmallerOrEqualValue(now)))
-        .get();
-    final totalThisMonth = thisMonthRows.fold<double>(0.0, (sum, e) => sum + e.amount);
+    final thisMonthRows =
+        await (db.select(db.incomeEntries)..where(
+              (e) =>
+                  e.date.isBiggerOrEqualValue(monthStart) &
+                  e.date.isSmallerOrEqualValue(now),
+            ))
+            .get();
+    final totalThisMonth = thisMonthRows.fold<double>(
+      0.0,
+      (sum, e) => sum + e.amount,
+    );
 
-    final last3MonthsRows = await (db.select(db.incomeEntries)
-          ..where((e) => e.date.isBiggerOrEqualValue(threeMonthsAgo) & e.date.isSmallerOrEqualValue(now)))
-        .get();
+    final last3MonthsRows =
+        await (db.select(db.incomeEntries)..where(
+              (e) =>
+                  e.date.isBiggerOrEqualValue(threeMonthsAgo) &
+                  e.date.isSmallerOrEqualValue(now),
+            ))
+            .get();
     final average = last3MonthsRows.isEmpty
         ? 0.0
-        : last3MonthsRows.fold<double>(0.0, (sum, e) => sum + e.amount) / last3MonthsRows.length;
+        : last3MonthsRows.fold<double>(0.0, (sum, e) => sum + e.amount) /
+              last3MonthsRows.length;
 
     return IncomeSummary(average, totalThisMonth);
   }

@@ -1,11 +1,13 @@
 // mobile/lib/widgets/plan_form_sheet.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/plans_provider.dart';
 import 'package:mobile/theme/app_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/money_format.dart';
+import 'package:mobile/theme/money_input_formatter.dart';
 
 const _planColorPalette = ['#c17a54', '#7a9b7e', '#8a9bb0', '#b8563a'];
 
@@ -15,16 +17,19 @@ Future<void> showPlanFormSheet(
   Plan? existing,
   int? defaultParentPlanId,
 }) {
+  final currency = SettingsScope.of(context).currency;
   final nameController = TextEditingController(text: existing?.name ?? '');
   final descController = TextEditingController(
     text: existing?.description ?? '',
   );
   final targetController = TextEditingController(
-    text: existing != null ? existing.targetAmount.toStringAsFixed(2) : '',
+    text: existing != null
+        ? formatCents((existing.targetAmount * 100).round(), currency)
+        : '',
   );
   final contributionController = TextEditingController(
     text: existing != null
-        ? existing.monthlyContribution.toStringAsFixed(2)
+        ? formatCents((existing.monthlyContribution * 100).round(), currency)
         : '',
   );
   var selectedColor = existing?.color ?? _planColorPalette.first;
@@ -73,25 +78,21 @@ Future<void> showPlanFormSheet(
                       const SizedBox(height: 16),
                       TextField(
                         controller: targetController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [MoneyInputFormatter(currency)],
                         decoration: InputDecoration(
                           labelText: 'Valor alvo',
-                          prefixText:
-                              '${currencySymbol(SettingsScope.of(ctx).currency)} ',
+                          prefixText: '${currencySymbol(currency)} ',
                         ),
                       ),
                       const SizedBox(height: 16),
                       TextField(
                         controller: contributionController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [MoneyInputFormatter(currency)],
                         decoration: InputDecoration(
                           labelText: 'Contribuição mensal',
-                          prefixText:
-                              '${currencySymbol(SettingsScope.of(ctx).currency)} ',
+                          prefixText: '${currencySymbol(currency)} ',
                         ),
                       ),
                       if (existing == null) ...[
@@ -149,11 +150,16 @@ Future<void> showPlanFormSheet(
                       const SizedBox(height: 24),
                       ElevatedButton(
                         onPressed: () async {
+                          HapticFeedback.lightImpact();
                           final repo = ref.read(plansRepositoryProvider);
-                          final target =
-                              double.tryParse(targetController.text) ?? 0;
-                          final contribution =
-                              double.tryParse(contributionController.text) ?? 0;
+                          final target = parseMoneyInput(
+                            targetController.text,
+                            currency,
+                          );
+                          final contribution = parseMoneyInput(
+                            contributionController.text,
+                            currency,
+                          );
                           if (existing == null) {
                             await repo.create(
                               parentPlanId: parentPlanId,

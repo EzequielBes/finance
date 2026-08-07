@@ -7,6 +7,7 @@ import 'package:mobile/providers/plans_provider.dart';
 import 'package:mobile/repositories/plans_repository.dart';
 import 'package:mobile/theme/app_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
+import 'package:mobile/theme/date_format.dart';
 import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/plan_icons.dart';
 import 'package:mobile/widgets/plan_contribution_sheet.dart';
@@ -326,8 +327,7 @@ class _OverviewTab extends ConsumerWidget {
                         const SizedBox(width: 24),
                         _Stat(
                           label: 'Data estimada',
-                          value:
-                              '${simulation!.estimatedDate!.month}/${simulation!.estimatedDate!.year}',
+                          value: formatMonthYear(simulation!.estimatedDate!),
                         ),
                       ],
                     ],

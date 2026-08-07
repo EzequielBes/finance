@@ -152,78 +152,83 @@ class _PaymentMarker extends StatelessWidget {
             ],
           ),
         ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(width: 34, child: Center(child: _MapDot())),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 42,
-                      padding: const EdgeInsets.symmetric(vertical: 5),
-                      decoration: BoxDecoration(
-                        color: AppColors.bgInput,
-                        borderRadius: BorderRadius.circular(9),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            '${event.date.day}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(width: 34, child: Center(child: _MapDot())),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 42,
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AppColors.bgInput,
+                          borderRadius: BorderRadius.circular(9),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              '${event.date.day}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
-                          ),
-                          Text(
-                            _month(event.date.month),
-                            style: const TextStyle(
-                              fontSize: 9,
-                              color: AppColors.textSecondary,
+                            Text(
+                              _month(event.date.month),
+                              style: const TextStyle(
+                                fontSize: 9,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            event.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                          Text(
-                            event.categoryName ?? 'Pagamento programado',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 11,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              event.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                        ],
+                            Text(
+                              event.categoryName ?? 'Pagamento programado',
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    Text(
-                      formatMoney(
-                        event.amount,
-                        SettingsScope.of(context).currency,
+                      Text(
+                        formatMoney(
+                          event.amount,
+                          SettingsScope.of(context).currency,
+                        ),
+                        style: const TextStyle(
+                          color: AppColors.accentDanger,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                      style: const TextStyle(
-                        color: AppColors.accentDanger,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );

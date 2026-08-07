@@ -14,6 +14,7 @@ class AppColors {
   static const accentWarning = Color(0xFFC17A54);
   static const accentDanger = Color(0xFFB8563A);
   static const accentInfo = Color(0xFF8A9BB0);
+  static const trackBackground = Color(0xFF34302A);
 }
 
 ThemeData buildAppTheme() {
@@ -105,6 +106,14 @@ ThemeData buildAppTheme() {
         backgroundColor: AppColors.accentPrimary,
         foregroundColor: AppColors.bgPrimary,
         minimumSize: const Size(48, 52),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.textPrimary,
+        minimumSize: const Size(48, 52),
+        side: const BorderSide(color: AppColors.border),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     ),

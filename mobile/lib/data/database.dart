@@ -7,9 +7,13 @@ import 'package:path_provider/path_provider.dart';
 part 'database.g.dart';
 
 enum CategoryType { expense, income }
+
 enum TransactionType { expense, income }
+
 enum RecurrencePeriod { monthly, weekly, yearly }
+
 enum PlanStatus { active, paused, cancelled, completed }
+
 enum ContributionType { deposit, withdrawal }
 
 class Categories extends Table {
@@ -25,7 +29,8 @@ class Categories extends Table {
 
 class Transactions extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get categoryId => integer().nullable().references(Categories, #id)();
+  IntColumn get categoryId =>
+      integer().nullable().references(Categories, #id)();
   TextColumn get description => text()();
   RealColumn get amount => real()();
   DateTimeColumn get date => dateTime()();
@@ -60,7 +65,8 @@ class Plans extends Table {
   RealColumn get currentSavings => real().withDefault(const Constant(0.0))();
   RealColumn get monthlyContribution => real()();
   DateTimeColumn get deadline => dateTime().nullable()();
-  TextColumn get status => textEnum<PlanStatus>().withDefault(Constant(PlanStatus.active.name))();
+  TextColumn get status =>
+      textEnum<PlanStatus>().withDefault(Constant(PlanStatus.active.name))();
   IntColumn get priority => integer().withDefault(const Constant(1))();
   TextColumn get color => text()();
   TextColumn get notes => text().nullable()();
@@ -78,7 +84,9 @@ class PlanContributions extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
-@DriftDatabase(tables: [Categories, Transactions, IncomeEntries, Plans, PlanContributions])
+@DriftDatabase(
+  tables: [Categories, Transactions, IncomeEntries, Plans, PlanContributions],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase({QueryExecutor? executor}) : super(executor ?? _openConnection());
 
@@ -87,16 +95,16 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {
-          await m.createAll();
-        },
-        onUpgrade: (m, from, to) async {
-          if (from < 2) {
-            await m.createTable(plans);
-            await m.createTable(planContributions);
-          }
-        },
-      );
+    onCreate: (m) async {
+      await m.createAll();
+    },
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.createTable(plans);
+        await m.createTable(planContributions);
+      }
+    },
+  );
 
   static QueryExecutor _openConnection() {
     return LazyDatabase(() async {

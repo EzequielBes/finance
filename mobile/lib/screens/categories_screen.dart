@@ -7,6 +7,7 @@ import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/category_icons.dart';
 import 'package:mobile/widgets/category_form_sheet.dart';
+import 'package:mobile/widgets/screen_header.dart';
 import 'package:mobile/data/database.dart';
 
 class CategoriesScreen extends ConsumerWidget {
@@ -16,23 +17,6 @@ class CategoriesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(categoriesProvider);
     return Scaffold(
-      appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Despesas'),
-            Text(
-              'Limites e uso por categoria',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                letterSpacing: 0,
-              ),
-            ),
-          ],
-        ),
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showCategoryFormSheet(context, ref),
         child: const Icon(Icons.add_rounded),
@@ -50,21 +34,36 @@ class CategoriesScreen extends ConsumerWidget {
             0,
             (sum, item) => sum + (item.category.monthlyLimit ?? 0),
           );
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
-            itemCount: expenses.length + 1,
-            itemBuilder: (ctx, i) {
-              if (i == 0) return _ExpenseSummary(used: used, limits: limits);
-              final item = expenses[i - 1];
-              return _CategoryCard(
-                item: item,
-                onTap: () => showCategoryFormSheet(
-                  context,
-                  ref,
-                  existing: item.category,
+          return CustomScrollView(
+            slivers: [
+              SliverSafeArea(
+                bottom: false,
+                sliver: SliverToBoxAdapter(
+                  child: ScreenHeader(
+                    title: 'Despesas',
+                    subtitle: 'Limites e uso por categoria',
+                    badge: '${expenses.length}',
+                  ),
                 ),
-              );
-            },
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+                sliver: SliverList.list(
+                  children: [
+                    _ExpenseSummary(used: used, limits: limits),
+                    for (final item in expenses)
+                      _CategoryCard(
+                        item: item,
+                        onTap: () => showCategoryFormSheet(
+                          context,
+                          ref,
+                          existing: item.category,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -129,6 +128,8 @@ class _CategoryCard extends StatelessWidget {
                     children: [
                       Text(
                         category.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w600,
@@ -145,13 +146,21 @@ class _CategoryCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text(
-                  limit != null
-                      ? '${formatMoney(item.currentMonthUsage, SettingsScope.of(context).currency)} / ${formatMoney(limit, SettingsScope.of(context).currency)}'
-                      : 'sem limite',
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    color: AppColors.textSecondary,
+                const SizedBox(width: 8),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 130),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      limit != null
+                          ? '${formatMoney(item.currentMonthUsage, SettingsScope.of(context).currency)} / ${formatMoney(limit, SettingsScope.of(context).currency)}'
+                          : 'sem limite',
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ),
                 ),
               ],

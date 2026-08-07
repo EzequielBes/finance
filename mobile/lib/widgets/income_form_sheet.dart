@@ -4,16 +4,21 @@ import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/income_provider.dart';
 import 'package:mobile/theme/app_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
+import 'package:mobile/theme/date_format.dart';
 import 'package:mobile/theme/money_format.dart';
+import 'package:mobile/theme/money_input_formatter.dart';
 
 Future<void> showIncomeFormSheet(
   BuildContext context,
   WidgetRef ref, {
   IncomeEntry? existing,
 }) {
+  final currency = SettingsScope.of(context).currency;
   final sourceController = TextEditingController(text: existing?.source ?? '');
   final amountController = TextEditingController(
-    text: existing != null ? existing.amount.toStringAsFixed(2) : '',
+    text: existing != null
+        ? formatCents((existing.amount * 100).round(), currency)
+        : '',
   );
   var date = existing?.date ?? DateTime.now();
 
@@ -67,10 +72,10 @@ Future<void> showIncomeFormSheet(
               TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
+                inputFormatters: [MoneyInputFormatter(currency)],
                 decoration: InputDecoration(
                   labelText: 'Valor',
-                  prefixText:
-                      '${currencySymbol(SettingsScope.of(ctx).currency)} ',
+                  prefixText: '${currencySymbol(currency)} ',
                 ),
               ),
               const SizedBox(height: 12),
@@ -90,16 +95,17 @@ Future<void> showIncomeFormSheet(
                     labelText: 'Data',
                     suffixIcon: Icon(Icons.calendar_today_outlined),
                   ),
-                  child: Text(
-                    '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
-                  ),
+                  child: Text(formatFullDate(date)),
                 ),
               ),
               const SizedBox(height: 18),
               ElevatedButton(
                 onPressed: () async {
                   final repo = ref.read(incomeRepositoryProvider);
-                  final amount = double.tryParse(amountController.text) ?? 0;
+                  final amount = parseMoneyInput(
+                    amountController.text,
+                    currency,
+                  );
                   if (existing == null) {
                     await repo.create(
                       amount: amount,

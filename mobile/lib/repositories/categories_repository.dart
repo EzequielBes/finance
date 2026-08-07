@@ -9,17 +9,72 @@ class CategoryWithUsage {
 }
 
 const _defaultCategories = [
-  {'name': 'Moradia', 'type': CategoryType.expense, 'color': '#c17a54', 'icon': 'bank'},
-  {'name': 'Alimentação', 'type': CategoryType.expense, 'color': '#7a9b7e', 'icon': 'tag'},
-  {'name': 'Transporte', 'type': CategoryType.expense, 'color': '#8a9bb0', 'icon': 'transactions'},
-  {'name': 'Saúde', 'type': CategoryType.expense, 'color': '#b8563a', 'icon': 'tag'},
-  {'name': 'Lazer', 'type': CategoryType.expense, 'color': '#c17a54', 'icon': 'tag'},
-  {'name': 'Compras', 'type': CategoryType.expense, 'color': '#7a9b7e', 'icon': 'wallet'},
-  {'name': 'Educação', 'type': CategoryType.expense, 'color': '#8a9bb0', 'icon': 'tag'},
-  {'name': 'Contas fixas', 'type': CategoryType.expense, 'color': '#b8563a', 'icon': 'bank'},
-  {'name': 'Salário', 'type': CategoryType.income, 'color': '#7a9b7e', 'icon': 'trending-up'},
-  {'name': 'Freelance', 'type': CategoryType.income, 'color': '#c17a54', 'icon': 'trending-up'},
-  {'name': 'Outros rendimentos', 'type': CategoryType.income, 'color': '#8a9bb0', 'icon': 'trending-up'},
+  {
+    'name': 'Moradia',
+    'type': CategoryType.expense,
+    'color': '#c17a54',
+    'icon': 'bank',
+  },
+  {
+    'name': 'Alimentação',
+    'type': CategoryType.expense,
+    'color': '#7a9b7e',
+    'icon': 'tag',
+  },
+  {
+    'name': 'Transporte',
+    'type': CategoryType.expense,
+    'color': '#8a9bb0',
+    'icon': 'transactions',
+  },
+  {
+    'name': 'Saúde',
+    'type': CategoryType.expense,
+    'color': '#b8563a',
+    'icon': 'tag',
+  },
+  {
+    'name': 'Lazer',
+    'type': CategoryType.expense,
+    'color': '#c17a54',
+    'icon': 'tag',
+  },
+  {
+    'name': 'Compras',
+    'type': CategoryType.expense,
+    'color': '#7a9b7e',
+    'icon': 'wallet',
+  },
+  {
+    'name': 'Educação',
+    'type': CategoryType.expense,
+    'color': '#8a9bb0',
+    'icon': 'tag',
+  },
+  {
+    'name': 'Contas fixas',
+    'type': CategoryType.expense,
+    'color': '#b8563a',
+    'icon': 'bank',
+  },
+  {
+    'name': 'Salário',
+    'type': CategoryType.income,
+    'color': '#7a9b7e',
+    'icon': 'trending-up',
+  },
+  {
+    'name': 'Freelance',
+    'type': CategoryType.income,
+    'color': '#c17a54',
+    'icon': 'trending-up',
+  },
+  {
+    'name': 'Outros rendimentos',
+    'type': CategoryType.income,
+    'color': '#8a9bb0',
+    'icon': 'trending-up',
+  },
 ];
 
 class CategoriesRepository {
@@ -33,16 +88,18 @@ class CategoriesRepository {
     for (final def in _defaultCategories) {
       final name = def['name'] as String;
       if (existingNames.contains(name.toLowerCase())) continue;
-      await db.into(db.categories).insert(
-        CategoriesCompanion.insert(
-          name: name,
-          type: def['type'] as CategoryType,
-          color: def['color'] as String,
-          icon: def['icon'] as String,
-          createdAt: now,
-          updatedAt: now,
-        ),
-      );
+      await db
+          .into(db.categories)
+          .insert(
+            CategoriesCompanion.insert(
+              name: name,
+              type: def['type'] as CategoryType,
+              color: def['color'] as String,
+              icon: def['icon'] as String,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
     }
   }
 
@@ -54,17 +111,19 @@ class CategoriesRepository {
     double? monthlyLimit,
   }) {
     final now = DateTime.now();
-    return db.into(db.categories).insert(
-      CategoriesCompanion.insert(
-        name: name,
-        type: type,
-        color: color,
-        icon: icon,
-        monthlyLimit: Value(monthlyLimit),
-        createdAt: now,
-        updatedAt: now,
-      ),
-    );
+    return db
+        .into(db.categories)
+        .insert(
+          CategoriesCompanion.insert(
+            name: name,
+            type: type,
+            color: color,
+            icon: icon,
+            monthlyLimit: Value(monthlyLimit),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
   }
 
   Future<void> update(
@@ -93,9 +152,14 @@ class CategoriesRepository {
     // both tables' watch streams ensures a write to either triggers a
     // recompute of the combined result.
     final categoriesChanged = db.select(db.categories).watch().map((_) => null);
-    final transactionsChanged = db.select(db.transactions).watch().map((_) => null);
-    return StreamGroup.merge<void>([categoriesChanged, transactionsChanged])
-        .asyncMap((_) => _computeUsage());
+    final transactionsChanged = db
+        .select(db.transactions)
+        .watch()
+        .map((_) => null);
+    return StreamGroup.merge<void>([
+      categoriesChanged,
+      transactionsChanged,
+    ]).asyncMap((_) => _computeUsage());
   }
 
   Future<List<CategoryWithUsage>> _computeUsage() async {
@@ -109,13 +173,15 @@ class CategoriesRepository {
     final todayEnd = DateTime(now.year, now.month, now.day + 1);
     final result = <CategoryWithUsage>[];
     for (final cat in cats) {
-      final txs = await (db.select(db.transactions)
-            ..where((t) =>
-                t.categoryId.equals(cat.id) &
-                t.type.equalsValue(TransactionType.expense) &
-                t.date.isBiggerOrEqualValue(monthStart) &
-                t.date.isSmallerThanValue(todayEnd)))
-          .get();
+      final txs =
+          await (db.select(db.transactions)..where(
+                (t) =>
+                    t.categoryId.equals(cat.id) &
+                    t.type.equalsValue(TransactionType.expense) &
+                    t.date.isBiggerOrEqualValue(monthStart) &
+                    t.date.isSmallerThanValue(todayEnd),
+              ))
+              .get();
       final usage = txs.fold<double>(0.0, (sum, t) => sum + t.amount);
       result.add(CategoryWithUsage(cat, usage));
     }

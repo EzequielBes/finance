@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/theme/app_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
+import 'package:mobile/theme/date_format.dart';
 import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/category_icons.dart';
 
@@ -59,7 +61,7 @@ class _TransactionCardState extends State<TransactionCard> {
         children: sorted.map((t) {
           final label =
               '${t.installmentsCurrent}/${t.installmentsTotal} — '
-              '${t.date.day}/${t.date.month} — ${formatMoney(t.amount, SettingsScope.of(context).currency)}';
+              '${formatShortDate(t.date)} — ${formatMoney(t.amount, SettingsScope.of(context).currency)}';
           return SimpleDialogOption(
             onPressed: () => Navigator.pop(ctx, t),
             child: Text(label),
@@ -88,7 +90,10 @@ class _TransactionCardState extends State<TransactionCard> {
         InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: group.isInstallmentGroup
-              ? () => setState(() => _expanded = !_expanded)
+              ? () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _expanded = !_expanded);
+                }
               : null,
           child: Container(
             decoration: BoxDecoration(
@@ -159,8 +164,8 @@ class _TransactionCardState extends State<TransactionCard> {
                       const SizedBox(height: 3),
                       Text(
                         category != null
-                            ? '${category.name} · ${current.date.day}/${current.date.month}'
-                            : '${current.date.day}/${current.date.month}',
+                            ? '${category.name} · ${formatShortDate(current.date)}'
+                            : formatShortDate(current.date),
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12.5,
@@ -232,7 +237,7 @@ class _TransactionCardState extends State<TransactionCard> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '${t.installmentsCurrent}/${t.installmentsTotal} — ${t.date.day}/${t.date.month}',
+                          '${t.installmentsCurrent}/${t.installmentsTotal} — ${formatShortDate(t.date)}',
                           style: TextStyle(color: statusColor, fontSize: 12.5),
                         ),
                       ),

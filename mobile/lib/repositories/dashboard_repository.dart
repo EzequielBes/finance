@@ -93,44 +93,63 @@ class DashboardRepository {
     final start = DateTime(refYear, refMonth, 1);
     final end = DateTime(refYear, refMonth + 1, 1);
 
-    final incomeRows = await (db.select(db.incomeEntries)
-          ..where((e) => e.date.isBiggerOrEqualValue(start) & e.date.isSmallerThanValue(end)))
-        .get();
-    final totalIncome = incomeRows.fold<double>(0.0, (sum, e) => sum + e.amount);
+    final incomeRows =
+        await (db.select(db.incomeEntries)..where(
+              (e) =>
+                  e.date.isBiggerOrEqualValue(start) &
+                  e.date.isSmallerThanValue(end),
+            ))
+            .get();
+    final totalIncome = incomeRows.fold<double>(
+      0.0,
+      (sum, e) => sum + e.amount,
+    );
 
-    final expenseTxs = await (db.select(db.transactions)
-          ..where((t) =>
-              t.type.equalsValue(TransactionType.expense) &
-              t.date.isBiggerOrEqualValue(start) &
-              t.date.isSmallerThanValue(end)))
-        .get();
-    final totalExpense = expenseTxs.fold<double>(0.0, (sum, t) => sum + t.amount);
+    final expenseTxs =
+        await (db.select(db.transactions)..where(
+              (t) =>
+                  t.type.equalsValue(TransactionType.expense) &
+                  t.date.isBiggerOrEqualValue(start) &
+                  t.date.isSmallerThanValue(end),
+            ))
+            .get();
+    final totalExpense = expenseTxs.fold<double>(
+      0.0,
+      (sum, t) => sum + t.amount,
+    );
 
-    final categories = await (db.select(db.categories)..where((c) => c.type.equalsValue(CategoryType.expense))).get();
+    final categories = await (db.select(
+      db.categories,
+    )..where((c) => c.type.equalsValue(CategoryType.expense))).get();
     final categoriesById = {for (final c in categories) c.id: c};
 
     final totalsByCategory = <int, double>{};
     for (final t in expenseTxs) {
       if (t.categoryId == null) continue;
-      totalsByCategory[t.categoryId!] = (totalsByCategory[t.categoryId!] ?? 0.0) + t.amount;
+      totalsByCategory[t.categoryId!] =
+          (totalsByCategory[t.categoryId!] ?? 0.0) + t.amount;
     }
 
     final byCategory = <CategoryExpenseSummary>[];
     totalsByCategory.forEach((catId, total) {
       final cat = categoriesById[catId];
       if (cat == null || total <= 0) return;
-      byCategory.add(CategoryExpenseSummary(
-        name: cat.name,
-        color: cat.color,
-        icon: cat.icon,
-        total: total,
-        percent: totalExpense > 0 ? (total / totalExpense * 100) : 0.0,
-      ));
+      byCategory.add(
+        CategoryExpenseSummary(
+          name: cat.name,
+          color: cat.color,
+          icon: cat.icon,
+          total: total,
+          percent: totalExpense > 0 ? (total / totalExpense * 100) : 0.0,
+        ),
+      );
     });
     byCategory.sort((a, b) => b.total.compareTo(a.total));
 
     final balance = totalIncome - totalExpense;
-    final savingsPercent = totalIncome > 0 ? (balance / totalIncome * 100) : 0.0;
+    final savingsPercent = totalIncome > 0
+        ? (balance / totalIncome * 100)
+        : 0.0;
 
     return DashboardSummary(
       totalIncome: totalIncome,
@@ -147,29 +166,41 @@ class DashboardRepository {
     final cutoff = DateTime(now.year, now.month + monthsAhead, now.day);
     final events = <TimelineEvent>[];
 
-    final txs = await (db.select(db.transactions)
-          ..where((t) => t.date.isBiggerOrEqualValue(today) & t.date.isSmallerOrEqualValue(cutoff)))
-        .get();
+    final txs =
+        await (db.select(db.transactions)..where(
+              (t) =>
+                  t.date.isBiggerOrEqualValue(today) &
+                  t.date.isSmallerOrEqualValue(cutoff),
+            ))
+            .get();
     final categories = await db.select(db.categories).get();
     final categoriesById = {for (final c in categories) c.id: c};
 
     for (final t in txs) {
-      final categoryName = t.categoryId != null ? categoriesById[t.categoryId]?.name : null;
-      events.add(TransactionTimelineEvent(
-        id: t.id,
-        title: t.description,
-        amount: t.amount,
-        date: t.date,
-        categoryName: categoryName,
-        transactionType: t.type,
-        isRecurring: t.isRecurring,
-        installmentsTotal: t.installmentsTotal,
-      ));
+      final categoryName = t.categoryId != null
+          ? categoriesById[t.categoryId]?.name
+          : null;
+      events.add(
+        TransactionTimelineEvent(
+          id: t.id,
+          title: t.description,
+          amount: t.amount,
+          date: t.date,
+          categoryName: categoryName,
+          transactionType: t.type,
+          isRecurring: t.isRecurring,
+          installmentsTotal: t.installmentsTotal,
+        ),
+      );
     }
 
-    final plans = await (db.select(db.plans)
-          ..where((p) => p.status.equalsValue(PlanStatus.active) | p.status.equalsValue(PlanStatus.paused)))
-        .get();
+    final plans =
+        await (db.select(db.plans)..where(
+              (p) =>
+                  p.status.equalsValue(PlanStatus.active) |
+                  p.status.equalsValue(PlanStatus.paused),
+            ))
+            .get();
     for (final plan in plans) {
       final simulation = await plansRepository.simulate(
         targetAmount: plan.targetAmount,
@@ -180,14 +211,16 @@ class DashboardRepository {
       final targetDate = plan.deadline ?? simulation.estimatedDate;
       if (targetDate == null) continue;
       if (targetDate.isBefore(today) || targetDate.isAfter(cutoff)) continue;
-      events.add(PlanMilestoneTimelineEvent(
-        id: plan.id,
-        title: plan.name,
-        targetAmount: plan.targetAmount,
-        date: targetDate,
-        planName: plan.name,
-        status: plan.status,
-      ));
+      events.add(
+        PlanMilestoneTimelineEvent(
+          id: plan.id,
+          title: plan.name,
+          targetAmount: plan.targetAmount,
+          date: targetDate,
+          planName: plan.name,
+          status: plan.status,
+        ),
+      );
     }
 
     events.sort((a, b) => a.date.compareTo(b.date));
@@ -200,18 +233,30 @@ class DashboardRepository {
   // any of them triggers a recompute, matching the pattern already used by
   // CategoriesRepository.watchAll() and PlansRepository.watchAll().
   Stream<DashboardSummary> watchSummary({int? month, int? year}) {
-    final transactionsChanged = db.select(db.transactions).watch().map((_) => null);
+    final transactionsChanged = db
+        .select(db.transactions)
+        .watch()
+        .map((_) => null);
     final incomeChanged = db.select(db.incomeEntries).watch().map((_) => null);
     final categoriesChanged = db.select(db.categories).watch().map((_) => null);
-    return StreamGroup.merge<void>([transactionsChanged, incomeChanged, categoriesChanged])
-        .asyncMap((_) => getSummary(month: month, year: year));
+    return StreamGroup.merge<void>([
+      transactionsChanged,
+      incomeChanged,
+      categoriesChanged,
+    ]).asyncMap((_) => getSummary(month: month, year: year));
   }
 
   Stream<List<TimelineEvent>> watchTimeline({int monthsAhead = 6}) {
-    final transactionsChanged = db.select(db.transactions).watch().map((_) => null);
+    final transactionsChanged = db
+        .select(db.transactions)
+        .watch()
+        .map((_) => null);
     final categoriesChanged = db.select(db.categories).watch().map((_) => null);
     final plansChanged = db.select(db.plans).watch().map((_) => null);
-    return StreamGroup.merge<void>([transactionsChanged, categoriesChanged, plansChanged])
-        .asyncMap((_) => getTimeline(monthsAhead: monthsAhead));
+    return StreamGroup.merge<void>([
+      transactionsChanged,
+      categoriesChanged,
+      plansChanged,
+    ]).asyncMap((_) => getTimeline(monthsAhead: monthsAhead));
   }
 }

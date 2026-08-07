@@ -5,6 +5,7 @@ import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/income_provider.dart';
 import 'package:mobile/theme/app_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
+import 'package:mobile/theme/date_format.dart';
 import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/widgets/income_form_sheet.dart';
 
@@ -139,7 +140,7 @@ class _IncomeCardState extends State<_IncomeCard> {
                   ),
                 ),
                 Text(
-                  '${e.date.day}/${e.date.month}/${e.date.year}',
+                  formatFullDate(e.date),
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,

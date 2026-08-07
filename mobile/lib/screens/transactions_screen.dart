@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:mobile/data/database.dart';
@@ -117,6 +118,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               children: [
                 SlidableAction(
                   onPressed: (_) async {
+                    HapticFeedback.mediumImpact();
                     await ref
                         .read(transactionsRepositoryProvider)
                         .remove(group.current.id);

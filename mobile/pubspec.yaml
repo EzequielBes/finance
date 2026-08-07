@@ -43,6 +43,7 @@ dependencies:
   uuid: ^4.6.0
   flutter_slidable: ^4.0.3
   async: ^2.13.1
+  google_fonts: ^8.2.1
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,6 @@
 // mobile/lib/widgets/savings_plan_section.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/plans_provider.dart';
@@ -88,6 +89,7 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
           InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: () {
+              HapticFeedback.selectionClick();
               setState(() => _expanded = !_expanded);
               if (_expanded && _allCandidates.isEmpty) _loadCandidates();
             },
@@ -160,7 +162,7 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
               ),
               const SizedBox(width: 8),
               SizedBox(
-                width: 50,
+                width: 44,
                 child: TextField(
                   controller: _targetPercentController,
                   keyboardType: TextInputType.number,
@@ -185,10 +187,15 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
                 ),
               ),
               const Spacer(),
-              TextButton.icon(
-                icon: Icon(planSuggestIcon, size: 16),
-                label: const Text('Sugerir'),
-                onPressed: _allCandidates.isEmpty ? null : _applySuggestion,
+              Flexible(
+                child: TextButton.icon(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  icon: Icon(planSuggestIcon, size: 16),
+                  label: const Text('Sugerir', overflow: TextOverflow.ellipsis),
+                  onPressed: _allCandidates.isEmpty ? null : _applySuggestion,
+                ),
               ),
             ],
           ),
@@ -234,7 +241,7 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: Colors.white10)),
+              border: Border(top: BorderSide(color: AppColors.trackBackground)),
             ),
             child: Row(
               children: [

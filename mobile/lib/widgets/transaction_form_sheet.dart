@@ -1,12 +1,15 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/categories_provider.dart';
 import 'package:mobile/providers/transactions_provider.dart';
 import 'package:mobile/theme/app_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
+import 'package:mobile/theme/date_format.dart';
 import 'package:mobile/theme/money_format.dart';
+import 'package:mobile/theme/money_input_formatter.dart';
 
 Future<void> showTransactionFormSheet(
   BuildContext context,
@@ -16,8 +19,11 @@ Future<void> showTransactionFormSheet(
   final descController = TextEditingController(
     text: existing?.description ?? '',
   );
+  final currency = SettingsScope.of(context).currency;
   final amountController = TextEditingController(
-    text: existing != null ? existing.amount.toStringAsFixed(2) : '',
+    text: existing != null
+        ? formatCents((existing.amount * 100).round(), currency)
+        : '',
   );
   var date = existing?.date ?? DateTime.now();
   var type = existing?.type ?? TransactionType.expense;
@@ -58,7 +64,7 @@ Future<void> showTransactionFormSheet(
                   categoryId = null;
                 }
                 final isExpense = type == TransactionType.expense;
-                final amount = double.tryParse(amountController.text) ?? 0;
+                final amount = parseMoneyInput(amountController.text, currency);
                 final perInstallment = installments > 0
                     ? amount / installments
                     : amount;
@@ -98,15 +104,14 @@ Future<void> showTransactionFormSheet(
                       const SizedBox(height: 8),
                       TextField(
                         controller: amountController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [MoneyInputFormatter(currency)],
                         style: const TextStyle(
                           fontSize: 16,
                           color: AppColors.textPrimary,
                         ),
                         decoration: InputDecoration(
-                          prefixText: '${currencySymbol(SettingsScope.of(ctx).currency)} ',
+                          prefixText: '${currencySymbol(currency)} ',
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 16,
@@ -179,9 +184,7 @@ Future<void> showTransactionFormSheet(
                           decoration: const InputDecoration(
                             suffixIcon: Icon(Icons.calendar_today_outlined),
                           ),
-                          child: Text(
-                            '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
-                          ),
+                          child: Text(formatFullDate(date)),
                         ),
                       ),
                       if (existing == null) ...[
@@ -205,9 +208,12 @@ Future<void> showTransactionFormSheet(
                           ),
                         ),
                         onPressed: () async {
+                          HapticFeedback.lightImpact();
                           final repo = ref.read(transactionsRepositoryProvider);
-                          final savedAmount =
-                              double.tryParse(amountController.text) ?? 0;
+                          final savedAmount = parseMoneyInput(
+                            amountController.text,
+                            currency,
+                          );
                           if (existing == null) {
                             await repo.create(
                               description: descController.text,

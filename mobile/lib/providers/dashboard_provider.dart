@@ -5,7 +5,10 @@ import 'package:mobile/providers/plans_provider.dart';
 import 'package:mobile/repositories/dashboard_repository.dart';
 
 final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
-  return DashboardRepository(ref.watch(appDatabaseProvider), ref.watch(plansRepositoryProvider));
+  return DashboardRepository(
+    ref.watch(appDatabaseProvider),
+    ref.watch(plansRepositoryProvider),
+  );
 });
 
 final dashboardSummaryProvider = StreamProvider<DashboardSummary>((ref) {

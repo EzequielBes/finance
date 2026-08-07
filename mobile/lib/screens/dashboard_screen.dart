@@ -156,7 +156,9 @@ class _FinancialHealthCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          summary.totalIncome > 0 ? '${spentPercent.toStringAsFixed(0)}%' : '--',
+                          summary.totalIncome > 0
+                              ? '${spentPercent.toStringAsFixed(0)}%'
+                              : '--',
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w800,
@@ -256,7 +258,10 @@ class _FinancialHealthCard extends StatelessWidget {
                         alignment: Alignment.centerRight,
                         child: Text(
                           '${_percentageOfIncome(category.total, summary.totalIncome)} · ${formatMoney(category.total, SettingsScope.of(context).currency)}',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),
@@ -370,7 +375,9 @@ String _monthName(DateTime date) =>
 String _percentageOfIncome(double value, double income) {
   if (income <= 0 || value <= 0) return '0%';
   final percent = value / income * 100;
-  return percent < 1 ? '${percent.toStringAsFixed(1)}%' : '${percent.toStringAsFixed(0)}%';
+  return percent < 1
+      ? '${percent.toStringAsFixed(1)}%'
+      : '${percent.toStringAsFixed(0)}%';
 }
 
 Future<void> _showCurrencySettings(BuildContext context) {

@@ -21,37 +21,45 @@ class TransactionsRepository {
     if (installmentsTotal != null && installmentsTotal > 1) {
       final groupId = _uuid.v4();
       for (var i = 1; i <= installmentsTotal; i++) {
-        final installmentDate = DateTime(date.year, date.month + (i - 1), date.day);
-        await db.into(db.transactions).insert(
+        final installmentDate = DateTime(
+          date.year,
+          date.month + (i - 1),
+          date.day,
+        );
+        await db
+            .into(db.transactions)
+            .insert(
+              TransactionsCompanion.insert(
+                categoryId: Value(categoryId),
+                description: '$description ($i/$installmentsTotal)',
+                amount: amount,
+                date: installmentDate,
+                type: type,
+                installmentsTotal: Value(installmentsTotal),
+                installmentsCurrent: Value(i),
+                installmentGroupId: Value(groupId),
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+      }
+      return;
+    }
+    await db
+        .into(db.transactions)
+        .insert(
           TransactionsCompanion.insert(
             categoryId: Value(categoryId),
-            description: '$description ($i/$installmentsTotal)',
+            description: description,
             amount: amount,
-            date: installmentDate,
+            date: date,
             type: type,
-            installmentsTotal: Value(installmentsTotal),
-            installmentsCurrent: Value(i),
-            installmentGroupId: Value(groupId),
+            isRecurring: Value(isRecurring),
+            recurrencePeriod: Value(recurrencePeriod),
             createdAt: now,
             updatedAt: now,
           ),
         );
-      }
-      return;
-    }
-    await db.into(db.transactions).insert(
-      TransactionsCompanion.insert(
-        categoryId: Value(categoryId),
-        description: description,
-        amount: amount,
-        date: date,
-        type: type,
-        isRecurring: Value(isRecurring),
-        recurrencePeriod: Value(recurrencePeriod),
-        createdAt: now,
-        updatedAt: now,
-      ),
-    );
   }
 
   Future<void> update(
@@ -63,7 +71,9 @@ class TransactionsRepository {
   }) {
     return (db.update(db.transactions)..where((t) => t.id.equals(id))).write(
       TransactionsCompanion(
-        description: description != null ? Value(description) : const Value.absent(),
+        description: description != null
+            ? Value(description)
+            : const Value.absent(),
         amount: amount != null ? Value(amount) : const Value.absent(),
         date: date != null ? Value(date) : const Value.absent(),
         categoryId: categoryId,
@@ -88,11 +98,17 @@ class TransactionsRepository {
     if (year != null && month != null) {
       final start = DateTime(year, month, 1);
       final end = DateTime(year, month + 1, 1);
-      query.where((t) => t.date.isBiggerOrEqualValue(start) & t.date.isSmallerThanValue(end));
+      query.where(
+        (t) =>
+            t.date.isBiggerOrEqualValue(start) & t.date.isSmallerThanValue(end),
+      );
     } else if (year != null) {
       final start = DateTime(year, 1, 1);
       final end = DateTime(year + 1, 1, 1);
-      query.where((t) => t.date.isBiggerOrEqualValue(start) & t.date.isSmallerThanValue(end));
+      query.where(
+        (t) =>
+            t.date.isBiggerOrEqualValue(start) & t.date.isSmallerThanValue(end),
+      );
     }
     if (categoryId != null) {
       query.where((t) => t.categoryId.equals(categoryId));
@@ -110,9 +126,12 @@ class TransactionsRepository {
 
   Future<List<String>> getSuggestions(String query) async {
     final lowerQuery = query.toLowerCase();
-    final rows = await (db.select(db.transactions)
-          ..orderBy([(t) => OrderingTerm.desc(t.date), (t) => OrderingTerm.desc(t.id)]))
-        .get();
+    final rows =
+        await (db.select(db.transactions)..orderBy([
+              (t) => OrderingTerm.desc(t.date),
+              (t) => OrderingTerm.desc(t.id),
+            ]))
+            .get();
     final seen = <String>{};
     final result = <String>[];
     for (final row in rows) {
