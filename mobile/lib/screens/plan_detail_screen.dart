@@ -5,11 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/plans_provider.dart';
 import 'package:mobile/repositories/plans_repository.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/date_format.dart';
 import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/plan_icons.dart';
+import 'package:mobile/widgets/glass_card.dart';
 import 'package:mobile/widgets/plan_contribution_sheet.dart';
 import 'package:mobile/widgets/plan_form_sheet.dart';
 import 'package:mobile/widgets/savings_plan_section.dart';
@@ -185,12 +186,8 @@ class _OverviewTab extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
+          GlassCard(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.bgCard,
-              borderRadius: BorderRadius.circular(20),
-            ),
             child: Column(
               children: [
                 SizedBox(
@@ -231,7 +228,7 @@ class _OverviewTab extends ConsumerWidget {
                         SettingsScope.of(context).currency,
                         SettingsScope.of(context).decimalSeparator,
                       ),
-                      color: AppColors.accentSuccess,
+                      color: LiquidGlassColors.positive,
                     ),
                     _Stat(
                       label: 'Meta',
@@ -256,7 +253,10 @@ class _OverviewTab extends ConsumerWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  icon: Icon(planDepositIcon, color: AppColors.accentSuccess),
+                  icon: Icon(
+                    planDepositIcon,
+                    color: LiquidGlassColors.positive,
+                  ),
                   label: const Text('Depositar'),
                   onPressed: () => showPlanContributionSheet(
                     context,
@@ -269,7 +269,10 @@ class _OverviewTab extends ConsumerWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: OutlinedButton.icon(
-                  icon: Icon(planWithdrawIcon, color: AppColors.accentDanger),
+                  icon: Icon(
+                    planWithdrawIcon,
+                    color: LiquidGlassColors.negative,
+                  ),
                   label: const Text('Retirar'),
                   onPressed: () => showPlanContributionSheet(
                     context,
@@ -282,12 +285,8 @@ class _OverviewTab extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Container(
+          GlassCard(
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: AppColors.bgCard,
-              borderRadius: BorderRadius.circular(16),
-            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -296,7 +295,7 @@ class _OverviewTab extends ConsumerWidget {
                     Icon(
                       planSimulatorIcon,
                       size: 18,
-                      color: AppColors.accentPrimary,
+                      color: LiquidGlassColors.accentPrimary,
                     ),
                     const SizedBox(width: 8),
                     const Text(
@@ -308,7 +307,9 @@ class _OverviewTab extends ConsumerWidget {
                 const SizedBox(height: 14),
                 Text(
                   'Contribuição mensal: ${formatMoney(simulatedContribution, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    color: LiquidGlassColors.textSecondary,
+                  ),
                 ),
                 Slider(
                   value: simulatedContribution,
@@ -358,7 +359,7 @@ class _SubPlansTab extends StatelessWidget {
       return const Center(
         child: Text(
           'Nenhum sub-plano ainda',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: LiquidGlassColors.textSecondary),
         ),
       );
     }
@@ -374,49 +375,52 @@ class _SubPlansTab extends StatelessWidget {
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.bgCard,
             borderRadius: BorderRadius.circular(16),
             border: Border(left: BorderSide(color: color, width: 4)),
           ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-            title: Text(
-              sub.name,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+          child: GlassCard(
+            intensity: GlassIntensity.opaque,
+            padding: EdgeInsets.zero,
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
               ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${formatMoney(sub.currentSavings, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)} / ${formatMoney(sub.targetAmount, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    color: AppColors.textSecondary,
-                  ),
+              title: Text(
+                sub.name,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: LiquidGlassColors.textPrimary,
                 ),
-                const SizedBox(height: 6),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    value: percent / 100,
-                    minHeight: 6,
-                    backgroundColor: Colors.white.withValues(alpha: 0.06),
-                    color: color,
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${formatMoney(sub.currentSavings, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)} / ${formatMoney(sub.targetAmount, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: LiquidGlassColors.textSecondary,
+                    ),
                   ),
+                  const SizedBox(height: 6),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(999),
+                    child: LinearProgressIndicator(
+                      value: percent / 100,
+                      minHeight: 6,
+                      backgroundColor: Colors.white.withValues(alpha: 0.06),
+                      color: color,
+                    ),
+                  ),
+                ],
+              ),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PlanDetailScreen(planId: sub.id),
                 ),
-              ],
-            ),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => PlanDetailScreen(planId: sub.id),
               ),
             ),
           ),
@@ -441,7 +445,7 @@ class _Stat extends StatelessWidget {
             label.toUpperCase(),
             style: const TextStyle(
               fontSize: 10,
-              color: AppColors.textSecondary,
+              color: LiquidGlassColors.textSecondary,
             ),
           ),
           const SizedBox(height: 2),
@@ -450,7 +454,7 @@ class _Stat extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: color ?? AppColors.textPrimary,
+              color: color ?? LiquidGlassColors.textPrimary,
             ),
           ),
         ],
