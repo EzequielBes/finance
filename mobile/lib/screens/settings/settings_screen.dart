@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/backup_provider.dart';
 import 'package:mobile/screens/settings/category_toggles_screen.dart';
 import 'package:mobile/settings/app_settings.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/theme/money_format.dart';
+import 'package:mobile/widgets/glass_card.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -92,7 +93,7 @@ class _SettingsSection extends StatelessWidget {
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.7,
-          color: AppColors.textSecondary,
+          color: LiquidGlassColors.textSecondary,
         ),
       ),
     );
@@ -116,12 +117,8 @@ class _OptionGroup<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        borderRadius: BorderRadius.circular(14),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -132,7 +129,7 @@ class _OptionGroup<T> extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                color: LiquidGlassColors.textSecondary,
               ),
             ),
           ),
@@ -141,7 +138,7 @@ class _OptionGroup<T> extends StatelessWidget {
               value: option,
               groupValue: value,
               dense: true,
-              activeColor: AppColors.accentPrimary,
+              activeColor: LiquidGlassColors.accentPrimary,
               title: Text(optionLabel(option)),
               onChanged: (v) {
                 if (v != null) onChanged(v);
@@ -166,17 +163,14 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        borderRadius: BorderRadius.circular(14),
-      ),
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: ListTile(
-        leading: Icon(icon, color: AppColors.accentPrimary),
+        leading: Icon(icon, color: LiquidGlassColors.accentPrimary),
         title: Text(label),
         trailing: const Icon(
           Icons.chevron_right,
-          color: AppColors.textSecondary,
+          color: LiquidGlassColors.textSecondary,
         ),
         onTap: onTap,
       ),
