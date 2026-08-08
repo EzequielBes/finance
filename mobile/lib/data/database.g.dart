@@ -640,6 +640,17 @@ class $TransactionsTable extends Transactions
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _importSourceMeta = const VerificationMeta(
+    'importSource',
+  );
+  @override
+  late final GeneratedColumn<String> importSource = GeneratedColumn<String>(
+    'import_source',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -675,6 +686,7 @@ class $TransactionsTable extends Transactions
     installmentsTotal,
     installmentsCurrent,
     installmentGroupId,
+    importSource,
     createdAt,
     updatedAt,
   ];
@@ -762,6 +774,15 @@ class $TransactionsTable extends Transactions
         ),
       );
     }
+    if (data.containsKey('import_source')) {
+      context.handle(
+        _importSourceMeta,
+        importSource.isAcceptableOrUnknown(
+          data['import_source']!,
+          _importSourceMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -835,6 +856,10 @@ class $TransactionsTable extends Transactions
         DriftSqlType.string,
         data['${effectivePrefix}installment_group_id'],
       ),
+      importSource: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}import_source'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -875,6 +900,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final int? installmentsTotal;
   final int? installmentsCurrent;
   final String? installmentGroupId;
+  final String? importSource;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Transaction({
@@ -889,6 +915,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     this.installmentsTotal,
     this.installmentsCurrent,
     this.installmentGroupId,
+    this.importSource,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -922,6 +949,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     if (!nullToAbsent || installmentGroupId != null) {
       map['installment_group_id'] = Variable<String>(installmentGroupId);
     }
+    if (!nullToAbsent || importSource != null) {
+      map['import_source'] = Variable<String>(importSource);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -950,6 +980,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       installmentGroupId: installmentGroupId == null && nullToAbsent
           ? const Value.absent()
           : Value(installmentGroupId),
+      importSource: importSource == null && nullToAbsent
+          ? const Value.absent()
+          : Value(importSource),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -980,6 +1013,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       installmentGroupId: serializer.fromJson<String?>(
         json['installmentGroupId'],
       ),
+      importSource: serializer.fromJson<String?>(json['importSource']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -1003,6 +1037,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'installmentsTotal': serializer.toJson<int?>(installmentsTotal),
       'installmentsCurrent': serializer.toJson<int?>(installmentsCurrent),
       'installmentGroupId': serializer.toJson<String?>(installmentGroupId),
+      'importSource': serializer.toJson<String?>(importSource),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -1020,6 +1055,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     Value<int?> installmentsTotal = const Value.absent(),
     Value<int?> installmentsCurrent = const Value.absent(),
     Value<String?> installmentGroupId = const Value.absent(),
+    Value<String?> importSource = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Transaction(
@@ -1042,6 +1078,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     installmentGroupId: installmentGroupId.present
         ? installmentGroupId.value
         : this.installmentGroupId,
+    importSource: importSource.present ? importSource.value : this.importSource,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -1072,6 +1109,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       installmentGroupId: data.installmentGroupId.present
           ? data.installmentGroupId.value
           : this.installmentGroupId,
+      importSource: data.importSource.present
+          ? data.importSource.value
+          : this.importSource,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1091,6 +1131,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('installmentsTotal: $installmentsTotal, ')
           ..write('installmentsCurrent: $installmentsCurrent, ')
           ..write('installmentGroupId: $installmentGroupId, ')
+          ..write('importSource: $importSource, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1110,6 +1151,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     installmentsTotal,
     installmentsCurrent,
     installmentGroupId,
+    importSource,
     createdAt,
     updatedAt,
   );
@@ -1128,6 +1170,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.installmentsTotal == this.installmentsTotal &&
           other.installmentsCurrent == this.installmentsCurrent &&
           other.installmentGroupId == this.installmentGroupId &&
+          other.importSource == this.importSource &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -1144,6 +1187,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<int?> installmentsTotal;
   final Value<int?> installmentsCurrent;
   final Value<String?> installmentGroupId;
+  final Value<String?> importSource;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const TransactionsCompanion({
@@ -1158,6 +1202,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.installmentsTotal = const Value.absent(),
     this.installmentsCurrent = const Value.absent(),
     this.installmentGroupId = const Value.absent(),
+    this.importSource = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -1173,6 +1218,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.installmentsTotal = const Value.absent(),
     this.installmentsCurrent = const Value.absent(),
     this.installmentGroupId = const Value.absent(),
+    this.importSource = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : description = Value(description),
@@ -1193,6 +1239,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<int>? installmentsTotal,
     Expression<int>? installmentsCurrent,
     Expression<String>? installmentGroupId,
+    Expression<String>? importSource,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -1210,6 +1257,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
         'installments_current': installmentsCurrent,
       if (installmentGroupId != null)
         'installment_group_id': installmentGroupId,
+      if (importSource != null) 'import_source': importSource,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -1227,6 +1275,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Value<int?>? installmentsTotal,
     Value<int?>? installmentsCurrent,
     Value<String?>? installmentGroupId,
+    Value<String?>? importSource,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
   }) {
@@ -1242,6 +1291,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       installmentsTotal: installmentsTotal ?? this.installmentsTotal,
       installmentsCurrent: installmentsCurrent ?? this.installmentsCurrent,
       installmentGroupId: installmentGroupId ?? this.installmentGroupId,
+      importSource: importSource ?? this.importSource,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -1289,6 +1339,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     if (installmentGroupId.present) {
       map['installment_group_id'] = Variable<String>(installmentGroupId.value);
     }
+    if (importSource.present) {
+      map['import_source'] = Variable<String>(importSource.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1312,6 +1365,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('installmentsTotal: $installmentsTotal, ')
           ..write('installmentsCurrent: $installmentsCurrent, ')
           ..write('installmentGroupId: $installmentGroupId, ')
+          ..write('importSource: $importSource, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -3548,6 +3602,7 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<int?> installmentsTotal,
       Value<int?> installmentsCurrent,
       Value<String?> installmentGroupId,
+      Value<String?> importSource,
       required DateTime createdAt,
       required DateTime updatedAt,
     });
@@ -3564,6 +3619,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<int?> installmentsTotal,
       Value<int?> installmentsCurrent,
       Value<String?> installmentGroupId,
+      Value<String?> importSource,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -3648,6 +3704,11 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<String> get installmentGroupId => $composableBuilder(
     column: $table.installmentGroupId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get importSource => $composableBuilder(
+    column: $table.importSource,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3744,6 +3805,11 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get importSource => $composableBuilder(
+    column: $table.importSource,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -3830,6 +3896,11 @@ class $$TransactionsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get importSource => $composableBuilder(
+    column: $table.importSource,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -3900,6 +3971,7 @@ class $$TransactionsTableTableManager
                 Value<int?> installmentsTotal = const Value.absent(),
                 Value<int?> installmentsCurrent = const Value.absent(),
                 Value<String?> installmentGroupId = const Value.absent(),
+                Value<String?> importSource = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => TransactionsCompanion(
@@ -3914,6 +3986,7 @@ class $$TransactionsTableTableManager
                 installmentsTotal: installmentsTotal,
                 installmentsCurrent: installmentsCurrent,
                 installmentGroupId: installmentGroupId,
+                importSource: importSource,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -3931,6 +4004,7 @@ class $$TransactionsTableTableManager
                 Value<int?> installmentsTotal = const Value.absent(),
                 Value<int?> installmentsCurrent = const Value.absent(),
                 Value<String?> installmentGroupId = const Value.absent(),
+                Value<String?> importSource = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
               }) => TransactionsCompanion.insert(
@@ -3945,6 +4019,7 @@ class $$TransactionsTableTableManager
                 installmentsTotal: installmentsTotal,
                 installmentsCurrent: installmentsCurrent,
                 installmentGroupId: installmentGroupId,
+                importSource: importSource,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),

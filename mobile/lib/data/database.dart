@@ -40,6 +40,7 @@ class Transactions extends Table {
   IntColumn get installmentsTotal => integer().nullable()();
   IntColumn get installmentsCurrent => integer().nullable()();
   TextColumn get installmentGroupId => text().nullable()();
+  TextColumn get importSource => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 }
@@ -91,7 +92,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase({QueryExecutor? executor}) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -102,6 +103,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 2) {
         await m.createTable(plans);
         await m.createTable(planContributions);
+      }
+      if (from < 3) {
+        await m.addColumn(transactions, transactions.importSource);
       }
     },
   );

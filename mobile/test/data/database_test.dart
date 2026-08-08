@@ -126,4 +126,36 @@ void main() {
     final sub = await (db.select(db.plans)..where((p) => p.id.equals(subId))).getSingle();
     expect(sub.parentPlanId, parentId);
   });
+
+  test('schemaVersion is 3', () {
+    expect(db.schemaVersion, 3);
+  });
+
+  test('inserts a transaction with importSource', () async {
+    final catId = await db.into(db.categories).insert(
+      CategoriesCompanion.insert(
+        name: 'Alimentação',
+        type: CategoryType.expense,
+        color: '#ff0000',
+        icon: 'restaurant',
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+      ),
+    );
+    await db.into(db.transactions).insert(
+      TransactionsCompanion.insert(
+        categoryId: Value(catId),
+        description: 'Supermercado',
+        amount: 150.0,
+        date: DateTime(2026, 1, 1),
+        type: TransactionType.expense,
+        importSource: const Value('nubank_csv'),
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+      ),
+    );
+    final rows = await db.select(db.transactions).get();
+    expect(rows.length, 1);
+    expect(rows.first.importSource, 'nubank_csv');
+  });
 }
