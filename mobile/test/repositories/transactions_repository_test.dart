@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/repositories/transactions_repository.dart';
+import 'package:mobile/services/import/import_result.dart';
 
 void main() {
   late AppDatabase db;
@@ -141,5 +142,74 @@ void main() {
     expect(rows[0].date, DateTime(2026, 11, 15));
     expect(rows[1].date, DateTime(2026, 12, 15));
     expect(rows[2].date, DateTime(2027, 1, 15));
+  });
+
+  test('bulkImport inserts new transactions and returns counts', () async {
+    final result = await repo.bulkImport([
+      ParsedTransaction(
+        description: 'Mercado',
+        amount: 50.0,
+        date: DateTime(2026, 1, 10),
+        type: ParsedTransactionType.expense,
+        importSource: 'nubank_csv',
+      ),
+      ParsedTransaction(
+        description: 'Salário',
+        amount: 3000.0,
+        date: DateTime(2026, 1, 5),
+        type: ParsedTransactionType.income,
+        importSource: 'nubank_csv',
+      ),
+    ]);
+    expect(result.inserted, 2);
+    expect(result.skipped, 0);
+    final rows = await db.select(db.transactions).get();
+    expect(rows.length, 2);
+  });
+
+  test('bulkImport skips a transaction that already exists within a 1-day window', () async {
+    await repo.create(
+      description: 'Mercado',
+      amount: 50.0,
+      date: DateTime(2026, 1, 10),
+      type: TransactionType.expense,
+    );
+
+    final result = await repo.bulkImport([
+      ParsedTransaction(
+        description: 'Mercado',
+        amount: 50.0,
+        date: DateTime(2026, 1, 11), // dentro da janela de 1 dia
+        type: ParsedTransactionType.expense,
+        importSource: 'nubank_csv',
+      ),
+    ]);
+
+    expect(result.inserted, 0);
+    expect(result.skipped, 1);
+    final rows = await db.select(db.transactions).get();
+    expect(rows.length, 1);
+  });
+
+  test('bulkImport inserts a transaction outside the 1-day dedup window', () async {
+    await repo.create(
+      description: 'Mercado',
+      amount: 50.0,
+      date: DateTime(2026, 1, 10),
+      type: TransactionType.expense,
+    );
+
+    final result = await repo.bulkImport([
+      ParsedTransaction(
+        description: 'Mercado',
+        amount: 50.0,
+        date: DateTime(2026, 1, 20),
+        type: ParsedTransactionType.expense,
+        importSource: 'nubank_csv',
+      ),
+    ]);
+
+    expect(result.inserted, 1);
+    expect(result.skipped, 0);
   });
 }

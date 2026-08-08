@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:mobile/data/database.dart';
+import 'package:mobile/services/import/import_result.dart';
 import 'package:uuid/uuid.dart';
 
 class TransactionsRepository {
@@ -142,5 +143,40 @@ class TransactionsRepository {
       if (result.length == 5) break;
     }
     return result;
+  }
+
+  Future<({int inserted, int skipped})> bulkImport(
+    List<ParsedTransaction> items,
+  ) async {
+    var inserted = 0;
+    var skipped = 0;
+    for (final item in items) {
+      final txType = item.type.toTransactionType();
+      final windowStart = item.date.subtract(const Duration(days: 1));
+      final windowEnd = item.date.add(const Duration(days: 1));
+      final duplicate = await (db.select(db.transactions)
+            ..where(
+              (t) =>
+                  t.description.equals(item.description) &
+                  t.amount.equals(item.amount) &
+                  t.type.equalsValue(txType) &
+                  t.date.isBiggerOrEqualValue(windowStart) &
+                  t.date.isSmallerOrEqualValue(windowEnd),
+            ))
+          .get();
+      if (duplicate.isNotEmpty) {
+        skipped++;
+        continue;
+      }
+      await create(
+        categoryId: item.categoryId,
+        description: item.description,
+        amount: item.amount,
+        date: item.date,
+        type: txType,
+      );
+      inserted++;
+    }
+    return (inserted: inserted, skipped: skipped);
   }
 }
