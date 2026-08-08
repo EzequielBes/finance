@@ -118,3 +118,55 @@ async def test_bulk_import_same_batch_duplicates(client: AsyncClient, auth_heade
     assert data["inserted"] == 1
     assert data["skipped_duplicates"] == 1
     assert data["total_received"] == 2
+
+
+@pytest.mark.asyncio
+async def test_bulk_import_different_type_not_duplicate(client: AsyncClient, auth_headers: dict):
+    payload = {
+        "transactions": [
+            {
+                "description": "Reembolso",
+                "amount": 100.00,
+                "date": "2024-01-20",
+                "type": "expense",
+                "import_source": "nubank_csv"
+            },
+            {
+                "description": "Reembolso",
+                "amount": 100.00,
+                "date": "2024-01-20",
+                "type": "income",
+                "import_source": "nubank_csv"
+            }
+        ]
+    }
+    response = await client.post("/transactions/bulk", json=payload, headers=auth_headers)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["inserted"] == 2
+    assert data["skipped_duplicates"] == 0
+    assert data["total_received"] == 2
+
+
+@pytest.mark.asyncio
+async def test_bulk_import_saves_import_source(client: AsyncClient, auth_headers: dict):
+    payload = {
+        "transactions": [
+            {
+                "description": "Cinema",
+                "amount": 35.00,
+                "date": "2024-01-25",
+                "type": "expense",
+                "import_source": "itau_csv"
+            }
+        ]
+    }
+    response = await client.post("/transactions/bulk", json=payload, headers=auth_headers)
+    assert response.status_code == 201
+
+    tx_response = await client.get("/transactions", headers=auth_headers)
+    assert tx_response.status_code == 200
+    items = tx_response.json()["items"]
+    imported_tx = next(item for item in items if item["description"] == "Cinema")
+    assert imported_tx["import_source"] == "itau_csv"
+

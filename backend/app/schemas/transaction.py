@@ -35,6 +35,7 @@ class TransactionResponse(BaseModel):
     installments_total: Optional[int]
     installments_current: Optional[int]
     installment_group_id: Optional[str]
+    import_source: Optional[str] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
