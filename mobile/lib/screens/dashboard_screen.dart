@@ -21,6 +21,7 @@ class DashboardScreen extends ConsumerWidget {
     final timelineAsync = ref.watch(dashboardTimelineProvider);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(_monthName(DateTime.now())),
         actions: [

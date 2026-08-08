@@ -83,10 +83,22 @@ class _HomeShellState extends State<HomeShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        physics: const BouncingScrollPhysics(),
-        children: _screens,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment(-0.4, -0.6),
+            radius: 1.2,
+            colors: [
+              LiquidGlassColors.surface,
+              LiquidGlassColors.background,
+            ],
+          ),
+        ),
+        child: PageView(
+          controller: _pageController,
+          physics: const BouncingScrollPhysics(),
+          children: _screens,
+        ),
       ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,

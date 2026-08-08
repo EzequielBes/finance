@@ -79,6 +79,7 @@ class _MovementsScreenState extends State<MovementsScreen> {
           }
 
           return Scaffold(
+            backgroundColor: Colors.transparent,
             body: Column(
               children: [
                 SafeArea(

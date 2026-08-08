@@ -18,6 +18,7 @@ class PlansScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final plansAsync = ref.watch(plansProvider);
     return Scaffold(
+      backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton(
         onPressed: () => showPlanFormSheet(context, ref),
         child: const Icon(Icons.add_rounded),
