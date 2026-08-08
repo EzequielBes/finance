@@ -106,14 +106,3 @@ class LiquidGlassMotion {
   static const curveEnter = Curves.easeOutCubic;
   static const curveSettle = Curves.easeOutBack;
 }
-
-/// Resolve uma duração de [LiquidGlassMotion] para instantâneo/crossfade
-/// curto quando o usuário pede movimento reduzido.
-class MotionProfile {
-  const MotionProfile();
-
-  Duration resolve(Duration base, {required bool reducedMotion}) {
-    if (!reducedMotion) return base;
-    return const Duration(milliseconds: 1);
-  }
-}
