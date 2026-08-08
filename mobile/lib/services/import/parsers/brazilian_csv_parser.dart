@@ -15,7 +15,8 @@ abstract class BrazilianCsvParser implements BankParser {
   @override
   bool canParse(String content) {
     try {
-      return recognizes(content) && _rows(content).any(isHeader);
+      final normalized = _normalize(content);
+      return recognizes(normalized) && _rows(normalized).any(isHeader);
     } on Object {
       return false;
     }
@@ -27,9 +28,10 @@ abstract class BrazilianCsvParser implements BankParser {
     final errors = <String>[];
 
     try {
-      final rows = _rows(content);
+      final normalized = _normalize(content);
+      final rows = _rows(normalized);
       final headerIndex = rows.indexWhere(isHeader);
-      if (!recognizes(content) || headerIndex < 0) {
+      if (!recognizes(normalized) || headerIndex < 0) {
         errors.add('Arquivo não reconhecido como extrato do $bankName.');
       } else {
         for (var index = headerIndex + 1; index < rows.length; index++) {
@@ -59,6 +61,11 @@ abstract class BrazilianCsvParser implements BankParser {
       errors: errors,
     );
   }
+
+  String _normalize(String content) => content
+      .replaceFirst('﻿', '')
+      .replaceAll('\r\n', '\n')
+      .replaceAll('\r', '\n');
 
   List<List<String>> _rows(String content) =>
       const CsvToListConverter(

@@ -99,6 +99,28 @@ void main() {
       });
     });
   }
+
+  group('CRLF and BOM normalization', () {
+    test('BancoDoBrasilParser handles CRLF line endings', () {
+      final content = File(
+        'test/services/import/fixtures/bb_sample.csv',
+      ).readAsStringSync().replaceAll('\n', '\r\n');
+      final parser = BancoDoBrasilParser();
+
+      expect(parser.canParse(content), isTrue);
+      final result = parser.parse(content);
+      expect(result.hasErrors, isFalse);
+      expect(result.transactions, hasLength(4));
+    });
+
+    test('SantanderParser handles a leading UTF-8 BOM', () {
+      final content =
+          '﻿${File('test/services/import/fixtures/santander_sample.csv').readAsStringSync()}';
+      final parser = SantanderParser();
+
+      expect(parser.canParse(content), isTrue);
+    });
+  });
 }
 
 typedef BankParserFactory = BankParser Function();
