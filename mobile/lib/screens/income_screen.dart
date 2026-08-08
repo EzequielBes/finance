@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/income_provider.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/date_format.dart';
 import 'package:mobile/theme/money_format.dart';
+import 'package:mobile/widgets/glass_card.dart';
 import 'package:mobile/widgets/income_form_sheet.dart';
 
 class IncomeScreen extends ConsumerStatefulWidget {
@@ -72,7 +73,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                     await ref.read(incomeRepositoryProvider).remove(e.id);
                     _load();
                   },
-                  backgroundColor: AppColors.accentDanger,
+                  backgroundColor: LiquidGlassColors.negative,
                   foregroundColor: Colors.white,
                   icon: Icons.delete_outline,
                   label: 'Excluir',
@@ -109,7 +110,7 @@ class _IncomeCardState extends State<_IncomeCard> {
     final e = widget.entry;
     return Container(
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.border)),
+        border: Border(bottom: BorderSide(color: LiquidGlassColors.glassBorder)),
       ),
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
@@ -118,12 +119,12 @@ class _IncomeCardState extends State<_IncomeCard> {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: AppColors.accentSuccess.withValues(alpha: 0.14),
+              color: LiquidGlassColors.positive.withValues(alpha: 0.14),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.arrow_upward_rounded,
-              color: AppColors.accentSuccess,
+              color: LiquidGlassColors.positive,
               size: 19,
             ),
           ),
@@ -142,7 +143,7 @@ class _IncomeCardState extends State<_IncomeCard> {
                 Text(
                   formatFullDate(e.date, SettingsScope.of(context).dateFormat),
                   style: const TextStyle(
-                    color: AppColors.textSecondary,
+                    color: LiquidGlassColors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -152,13 +153,13 @@ class _IncomeCardState extends State<_IncomeCard> {
           Text(
             '+ ${formatMoney(e.amount, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
             style: const TextStyle(
-              color: AppColors.accentSuccess,
+              color: LiquidGlassColors.positive,
               fontWeight: FontWeight.bold,
             ),
           ),
           PopupMenuButton<void>(
             tooltip: 'Opções da receita',
-            icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
+            icon: const Icon(Icons.more_vert, color: LiquidGlassColors.textSecondary),
             onSelected: (_) => widget.onTapEdit(),
             itemBuilder: (_) => const [
               PopupMenuItem(value: null, child: Text('Editar receita')),
@@ -178,51 +179,44 @@ class _IncomeSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 18),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF263028), AppColors.bgCard],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: GlassCard(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'RECEBIDO NO PERÍODO',
+              style: TextStyle(
+                color: LiquidGlassColors.textSecondary,
+                fontSize: 11,
+                letterSpacing: 0.7,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              formatMoney(
+                total,
+                SettingsScope.of(context).currency,
+                SettingsScope.of(context).decimalSeparator,
+              ),
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.8,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              '$count ${count == 1 ? 'entrada registrada' : 'entradas registradas'}',
+              style: const TextStyle(
+                color: LiquidGlassColors.textSecondary,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.accentSuccess.withValues(alpha: 0.25),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'RECEBIDO NO PERÍODO',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 11,
-              letterSpacing: 0.7,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            formatMoney(
-              total,
-              SettingsScope.of(context).currency,
-              SettingsScope.of(context).decimalSeparator,
-            ),
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.8,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            '$count ${count == 1 ? 'entrada registrada' : 'entradas registradas'}',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-            ),
-          ),
-        ],
       ),
     );
   }
