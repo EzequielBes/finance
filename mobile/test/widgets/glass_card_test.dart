@@ -1,6 +1,5 @@
 // mobile/test/widgets/glass_card_test.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/widgets/glass_card.dart';
@@ -76,5 +75,37 @@ void main() {
     );
 
     expect(find.byType(BackdropFilter), findsOneWidget);
+  });
+
+  testWidgets('uses custom borderRadius when provided', (tester) async {
+    final customRadius = BorderRadius.only(
+      topLeft: const Radius.circular(16),
+      topRight: const Radius.circular(16),
+      bottomLeft: Radius.zero,
+      bottomRight: Radius.zero,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GlassCard(
+          borderRadius: customRadius,
+          child: const Text('conteúdo'),
+        ),
+      ),
+    );
+
+    final clip = tester.widget<ClipRRect>(find.byType(ClipRRect).first);
+    expect(clip.borderRadius, customRadius);
+  });
+
+  testWidgets('falls back to LiquidGlassRadius.card when borderRadius is omitted', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: GlassCard(child: Text('conteúdo')),
+      ),
+    );
+
+    final clip = tester.widget<ClipRRect>(find.byType(ClipRRect).first);
+    expect(clip.borderRadius, BorderRadius.circular(LiquidGlassRadius.card));
   });
 }

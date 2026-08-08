@@ -8,12 +8,14 @@ class GlassCard extends StatelessWidget {
     required this.child,
     this.intensity = GlassIntensity.full,
     this.padding = const EdgeInsets.all(LiquidGlassSpacing.lg),
+    this.borderRadius,
     super.key,
   });
 
   final Widget child;
   final GlassIntensity intensity;
   final EdgeInsetsGeometry padding;
+  final BorderRadius? borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -21,11 +23,14 @@ class GlassCard extends StatelessWidget {
         ? GlassIntensity.opaque
         : intensity;
 
+    final effectiveRadius =
+        borderRadius ?? BorderRadius.circular(LiquidGlassRadius.card);
+
     final content = Container(
       padding: padding,
       decoration: BoxDecoration(
         color: LiquidGlassColors.glassFill.withValues(alpha: effectiveIntensity.fillAlpha),
-        borderRadius: BorderRadius.circular(LiquidGlassRadius.card),
+        borderRadius: effectiveRadius,
         border: Border.all(color: LiquidGlassColors.glassBorder),
         boxShadow: const [
           BoxShadow(
@@ -39,7 +44,7 @@ class GlassCard extends StatelessWidget {
     );
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(LiquidGlassRadius.card),
+      borderRadius: effectiveRadius,
       child: effectiveIntensity.blurSigma == 0
           ? content
           : BackdropFilter(
