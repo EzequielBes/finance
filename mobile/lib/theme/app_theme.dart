@@ -21,7 +21,7 @@ ThemeData buildAppTheme() {
   return ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    scaffoldBackgroundColor: Colors.transparent,
+    scaffoldBackgroundColor: AppColors.bgPrimary,
     colorScheme: const ColorScheme.dark(
       primary: AppColors.accentPrimary,
       secondary: AppColors.accentInfo,
