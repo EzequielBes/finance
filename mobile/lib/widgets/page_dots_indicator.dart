@@ -47,17 +47,18 @@ class _PageDotsIndicatorState extends State<PageDotsIndicator> {
       mainAxisSize: MainAxisSize.min,
       children: List.generate(widget.pageCount, (index) {
         final distance = (currentPage - index).abs().clamp(0.0, 1.0);
-        final isActive = distance < 0.5;
+        final t = 1.0 - distance;
 
-        return AnimatedContainer(
-          duration: LiquidGlassMotion.stateChange,
+        return Container(
           margin: const EdgeInsets.symmetric(horizontal: 3),
-          width: isActive ? 20 : 6,
+          width: 6 + 14 * t,
           height: 6,
           decoration: BoxDecoration(
-            color: isActive
-                ? LiquidGlassColors.accentPrimary
-                : LiquidGlassColors.textSecondary.withValues(alpha: 0.4),
+            color: Color.lerp(
+              LiquidGlassColors.textSecondary.withValues(alpha: 0.4),
+              LiquidGlassColors.accentPrimary,
+              t,
+            ),
             borderRadius: BorderRadius.circular(3),
           ),
         );

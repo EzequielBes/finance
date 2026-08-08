@@ -66,8 +66,6 @@ class _HomeShellState extends State<HomeShell> {
     final rounded = page.round();
     if (rounded != _index) {
       setState(() => _index = rounded);
-    } else {
-      setState(() {});
     }
   }
 
