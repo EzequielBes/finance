@@ -7,8 +7,9 @@ import 'package:mobile/providers/dashboard_provider.dart';
 import 'package:mobile/repositories/dashboard_repository.dart';
 import 'package:mobile/screens/settings/settings_screen.dart';
 import 'package:mobile/settings/app_settings.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/theme/money_format.dart';
+import 'package:mobile/widgets/glass_card.dart';
 import 'package:mobile/widgets/payment_map.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -48,7 +49,7 @@ class DashboardScreen extends ConsumerWidget {
                     child: _Metric(
                       label: 'Receitas',
                       value: summary.totalIncome,
-                      color: AppColors.accentSuccess,
+                      color: LiquidGlassColors.positive,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -56,7 +57,7 @@ class DashboardScreen extends ConsumerWidget {
                     child: _Metric(
                       label: 'Despesas',
                       value: summary.totalExpense,
-                      color: AppColors.accentDanger,
+                      color: LiquidGlassColors.negative,
                     ),
                   ),
                 ],
@@ -67,12 +68,9 @@ class DashboardScreen extends ConsumerWidget {
                 subtitle: 'Próximos pagamentos deste mês',
               ),
               const SizedBox(height: 10),
-              Container(
+              GlassCard(
+                intensity: GlassIntensity.reduced,
                 padding: const EdgeInsets.fromLTRB(14, 18, 14, 12),
-                decoration: BoxDecoration(
-                  color: AppColors.bgCard,
-                  borderRadius: BorderRadius.circular(18),
-                ),
                 child: timelineAsync.when(
                   data: (events) {
                     final now = DateTime.now();
@@ -114,26 +112,15 @@ class _FinancialHealthCard extends StatelessWidget {
     final spentPercent = summary.totalIncome > 0
         ? summary.totalExpense / summary.totalIncome * 100
         : 0.0;
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF30261F), AppColors.bgCard],
-        ),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: AppColors.accentPrimary.withValues(alpha: 0.24),
-        ),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'SAÚDE FINANCEIRA',
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: LiquidGlassColors.textSecondary,
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.8,
@@ -171,7 +158,7 @@ class _FinancialHealthCard extends StatelessWidget {
                         Text(
                           summary.totalIncome > 0 ? 'gasto' : 'sem renda',
                           style: const TextStyle(
-                            color: AppColors.textSecondary,
+                            color: LiquidGlassColors.textSecondary,
                             fontSize: 11,
                           ),
                         ),
@@ -188,7 +175,7 @@ class _FinancialHealthCard extends StatelessWidget {
                     const Text(
                       'Saldo disponível',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: LiquidGlassColors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -217,7 +204,7 @@ class _FinancialHealthCard extends StatelessWidget {
                           ? 'Atenção ao restante do mês.'
                           : 'Você está perto do limite mensal.',
                       style: const TextStyle(
-                        color: AppColors.textSecondary,
+                        color: LiquidGlassColors.textSecondary,
                         fontSize: 11,
                         height: 1.35,
                       ),
@@ -252,7 +239,7 @@ class _FinancialHealthCard extends StatelessWidget {
                         category.name,
                         style: const TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: LiquidGlassColors.textSecondary,
                         ),
                       ),
                     ),
@@ -293,19 +280,16 @@ class _Metric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassCard(
+      intensity: GlassIntensity.reduced,
       padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        borderRadius: BorderRadius.circular(15),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
             style: const TextStyle(
-              color: AppColors.textSecondary,
+              color: LiquidGlassColors.textSecondary,
               fontSize: 11,
             ),
           ),
@@ -407,7 +391,10 @@ class _SectionHeader extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           subtitle,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+          style: const TextStyle(
+            color: LiquidGlassColors.textSecondary,
+            fontSize: 11,
+          ),
         ),
       ],
     );
