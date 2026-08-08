@@ -4,7 +4,7 @@ import 'package:mobile/providers/income_provider.dart';
 import 'package:mobile/providers/transactions_provider.dart';
 import 'package:mobile/services/import/import_result.dart';
 import 'package:mobile/settings/app_settings.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/theme/date_format.dart';
 import 'package:mobile/theme/money_format.dart';
 
@@ -66,7 +66,7 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
             child: Text(
               '${widget.result.bankName} · ${transactions.length} transações encontradas',
               style: const TextStyle(
-                color: AppColors.textSecondary,
+                color: LiquidGlassColors.textSecondary,
                 fontSize: 13,
               ),
             ),
@@ -76,7 +76,7 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.accentWarning.withValues(alpha: 0.15),
+                color: LiquidGlassColors.warning.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Column(
@@ -86,7 +86,7 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
                     Text(
                       error,
                       style: const TextStyle(
-                        color: AppColors.accentWarning,
+                        color: LiquidGlassColors.warning,
                         fontSize: 12.5,
                       ),
                     ),
@@ -108,8 +108,8 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
                     '${isExpense ? '−' : '+'} ${formatMoney(tx.amount, currency, decimalSeparator)}',
                     style: TextStyle(
                       color: isExpense
-                          ? AppColors.accentDanger
-                          : AppColors.accentSuccess,
+                          ? LiquidGlassColors.negative
+                          : LiquidGlassColors.positive,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
