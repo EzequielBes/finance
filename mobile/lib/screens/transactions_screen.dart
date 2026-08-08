@@ -10,6 +10,7 @@ import 'package:mobile/providers/categories_provider.dart';
 import 'package:mobile/providers/transactions_provider.dart';
 import 'package:mobile/repositories/categories_repository.dart';
 import 'package:mobile/screens/import_preview_screen.dart';
+import 'package:mobile/services/import/import_result.dart';
 import 'package:mobile/services/import/parser_dispatcher.dart';
 import 'package:mobile/theme/app_theme.dart';
 import 'package:mobile/widgets/transaction_card.dart';
@@ -100,11 +101,21 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     );
     if (picked == null || picked.files.single.path == null) return;
 
-    final content = await File(picked.files.single.path!).readAsString();
-    final result = dispatchImport(content);
+    ImportResult? result;
+    try {
+      final content = await File(picked.files.single.path!).readAsString();
+      result = dispatchImport(content);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível ler o arquivo')),
+      );
+      return;
+    }
 
     if (!mounted) return;
-    if (result == null) {
+    final matched = result;
+    if (matched == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Formato não reconhecido')),
       );
@@ -112,7 +123,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     }
 
     await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => ImportPreviewScreen(result: result)),
+      MaterialPageRoute(builder: (_) => ImportPreviewScreen(result: matched)),
     );
     _load();
   }
