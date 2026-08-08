@@ -7,7 +7,7 @@ import 'package:mobile/screens/income_screen.dart';
 import 'package:mobile/screens/transactions_screen.dart';
 import 'package:mobile/services/import/bank_import_service.dart';
 import 'package:mobile/services/import/import_result.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/widgets/month_selector.dart';
 
 class MovementsScreen extends StatefulWidget {
@@ -101,11 +101,11 @@ class _MovementsScreenState extends State<MovementsScreen> {
                   ),
                 ),
                 const TabBar(
-                  dividerColor: AppColors.border,
-                  indicatorColor: AppColors.accentPrimary,
+                  dividerColor: LiquidGlassColors.glassBorder,
+                  indicatorColor: LiquidGlassColors.accentPrimary,
                   indicatorSize: TabBarIndicatorSize.tab,
-                  labelColor: AppColors.textPrimary,
-                  unselectedLabelColor: AppColors.textSecondary,
+                  labelColor: LiquidGlassColors.textPrimary,
+                  unselectedLabelColor: LiquidGlassColors.textSecondary,
                   tabs: [
                     Tab(text: 'Transações'),
                     Tab(text: 'Receitas'),
