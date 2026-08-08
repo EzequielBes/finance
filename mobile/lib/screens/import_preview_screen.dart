@@ -23,13 +23,21 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
   Future<void> _confirmImport() async {
     setState(() => _importing = true);
     final repo = ref.read(transactionsRepositoryProvider);
+    final expenseItems = widget.result.transactions
+        .where((tx) => tx.type == ParsedTransactionType.expense)
+        .toList();
+    final skippedIncomeCount =
+        widget.result.transactions.length - expenseItems.length;
     try {
-      final result = await repo.bulkImport(widget.result.transactions);
+      final result = await repo.bulkImport(expenseItems);
       if (!mounted) return;
+      final incomeNote = skippedIncomeCount > 0
+          ? ' ($skippedIncomeCount receitas não importadas — importação de receitas ainda não suportada)'
+          : '';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${result.inserted} importadas, ${result.skipped} já existiam',
+            '${result.inserted} importadas, ${result.skipped} já existiam$incomeNote',
           ),
         ),
       );
