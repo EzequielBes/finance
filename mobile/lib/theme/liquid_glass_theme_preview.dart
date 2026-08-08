@@ -40,9 +40,7 @@ Widget liquidGlassIntensityCards() {
     decoration: BoxDecoration(
       color: LiquidGlassColors.glassFill.withValues(alpha: intensity.fillAlpha),
       borderRadius: BorderRadius.circular(LiquidGlassRadius.card),
-      border: Border.all(
-        color: LiquidGlassColors.glassBorder.withValues(alpha: 0.12),
-      ),
+      border: Border.all(color: LiquidGlassColors.glassBorder),
     ),
     child: Text(intensity.name, style: LiquidGlassTypography.body),
   );
@@ -50,9 +48,7 @@ Widget liquidGlassIntensityCards() {
   return Container(
     color: LiquidGlassColors.background,
     padding: const EdgeInsets.all(LiquidGlassSpacing.lg),
-    child: Wrap(
-      children: GlassIntensity.values.map(card).toList(),
-    ),
+    child: Wrap(children: GlassIntensity.values.map(card).toList()),
   );
 }
 
