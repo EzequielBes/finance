@@ -18,18 +18,19 @@ Future<void> showPlanFormSheet(
   int? defaultParentPlanId,
 }) {
   final currency = SettingsScope.of(context).currency;
+  final decimalSeparator = SettingsScope.of(context).decimalSeparator;
   final nameController = TextEditingController(text: existing?.name ?? '');
   final descController = TextEditingController(
     text: existing?.description ?? '',
   );
   final targetController = TextEditingController(
     text: existing != null
-        ? formatCents((existing.targetAmount * 100).round(), currency)
+        ? formatCents((existing.targetAmount * 100).round(), currency, decimalSeparator)
         : '',
   );
   final contributionController = TextEditingController(
     text: existing != null
-        ? formatCents((existing.monthlyContribution * 100).round(), currency)
+        ? formatCents((existing.monthlyContribution * 100).round(), currency, decimalSeparator)
         : '',
   );
   var selectedColor = existing?.color ?? _planColorPalette.first;
@@ -79,7 +80,9 @@ Future<void> showPlanFormSheet(
                       TextField(
                         controller: targetController,
                         keyboardType: TextInputType.number,
-                        inputFormatters: [MoneyInputFormatter(currency)],
+                        inputFormatters: [
+                          MoneyInputFormatter(currency, decimalSeparator),
+                        ],
                         decoration: InputDecoration(
                           labelText: 'Valor alvo',
                           prefixText: '${currencySymbol(currency)} ',
@@ -89,7 +92,9 @@ Future<void> showPlanFormSheet(
                       TextField(
                         controller: contributionController,
                         keyboardType: TextInputType.number,
-                        inputFormatters: [MoneyInputFormatter(currency)],
+                        inputFormatters: [
+                          MoneyInputFormatter(currency, decimalSeparator),
+                        ],
                         decoration: InputDecoration(
                           labelText: 'Contribuição mensal',
                           prefixText: '${currencySymbol(currency)} ',
@@ -155,10 +160,12 @@ Future<void> showPlanFormSheet(
                           final target = parseMoneyInput(
                             targetController.text,
                             currency,
+                            decimalSeparator,
                           );
                           final contribution = parseMoneyInput(
                             contributionController.text,
                             currency,
+                            decimalSeparator,
                           );
                           if (existing == null) {
                             await repo.create(

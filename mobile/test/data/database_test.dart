@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -158,4 +160,92 @@ void main() {
     expect(rows.length, 1);
     expect(rows.first.importSource, 'nubank_csv');
   });
+
+  test('new categories default to isActive true', () async {
+    final id = await db.into(db.categories).insert(
+      CategoriesCompanion.insert(
+        name: 'Lazer',
+        type: CategoryType.expense,
+        color: '#c17a54',
+        icon: 'tag',
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+      ),
+    );
+    final row = await (db.select(db.categories)..where((c) => c.id.equals(id))).getSingle();
+    expect(row.isActive, true);
+  });
+
+  test('schemaVersion is 3', () {
+    expect(db.schemaVersion, 3);
+  });
+
+  test('v2 to v3 upgrade adds isActive column, preserving existing rows', () async {
+    final directory = await Directory.systemTemp.createTemp('db_migration');
+    final file = File('${directory.path}/v2.sqlite');
+    addTearDown(() => directory.delete(recursive: true));
+
+    // Build a v2 database by hand: the current `categories` table minus the
+    // `is_active` column added in the v3 migration, matching how a real
+    // user's on-disk schema would look before upgrading.
+    final v2 = NativeDatabase(file);
+    await v2.ensureOpen(_NoopUser());
+    await v2.runCustom('''
+      CREATE TABLE categories (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        color TEXT NOT NULL,
+        icon TEXT NOT NULL,
+        monthly_limit REAL NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    ''', []);
+    await v2.runCustom(
+      'INSERT INTO categories (name, type, color, icon, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['Moradia', 'expense', '#c17a54', 'bank', 1735689600, 1735689600],
+    );
+    await v2.runCustom('''
+      CREATE TABLE transactions (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        category_id INTEGER NULL REFERENCES categories(id),
+        description TEXT NOT NULL,
+        amount REAL NOT NULL,
+        date INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        is_recurring INTEGER NOT NULL DEFAULT 0,
+        recurrence_period TEXT NULL,
+        installments_total INTEGER NULL,
+        installments_current INTEGER NULL,
+        installment_group_id TEXT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    ''', []);
+    await v2.runCustom('PRAGMA user_version = 2', []);
+    await v2.close();
+
+    // Reopen through AppDatabase against the same file: this triggers the
+    // real onUpgrade path exactly as it would for an upgrading user.
+    final upgraded = AppDatabase(executor: NativeDatabase(file));
+    addTearDown(upgraded.close);
+
+    final rows = await upgraded.select(upgraded.categories).get();
+    expect(rows.length, 1);
+    expect(rows.first.name, 'Moradia');
+    expect(rows.first.isActive, true);
+  });
+}
+
+class _NoopUser extends QueryExecutorUser {
+  @override
+  int get schemaVersion => 1;
+
+  @override
+  Future<void> beforeOpen(
+    QueryExecutor executor,
+    OpeningDetails details,
+  ) async {}
 }

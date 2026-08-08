@@ -55,6 +55,7 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
   @override
   Widget build(BuildContext context) {
     final currency = SettingsScope.of(context).currency;
+    final decimalSeparator = SettingsScope.of(context).decimalSeparator;
     final transactions = widget.result.transactions;
 
     return Scaffold(
@@ -105,7 +106,7 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
                   title: Text(tx.description),
                   subtitle: Text(formatShortDate(tx.date)),
                   trailing: Text(
-                    '${isExpense ? '−' : '+'} ${formatMoney(tx.amount, currency)}',
+                    '${isExpense ? '−' : '+'} ${formatMoney(tx.amount, currency, decimalSeparator)}',
                     style: TextStyle(
                       color: isExpense
                           ? AppColors.accentDanger

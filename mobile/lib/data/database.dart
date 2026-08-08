@@ -23,6 +23,7 @@ class Categories extends Table {
   TextColumn get color => text()();
   TextColumn get icon => text()();
   RealColumn get monthlyLimit => real().nullable()();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 }
@@ -106,6 +107,7 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 3) {
         await m.addColumn(transactions, transactions.importSource);
+        await m.addColumn(categories, categories.isActive);
       }
     },
   );
