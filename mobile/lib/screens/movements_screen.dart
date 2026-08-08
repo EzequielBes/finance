@@ -100,7 +100,11 @@ class _MovementsScreenState extends State<MovementsScreen> {
                     embedded: true,
                     selectedMonth: _month,
                   ),
-                  IncomeScreen(embedded: true, selectedMonth: _month),
+                  IncomeScreen(
+                    key: ValueKey('income-$_refreshCounter'),
+                    embedded: true,
+                    selectedMonth: _month,
+                  ),
                 ],
               ),
             ),

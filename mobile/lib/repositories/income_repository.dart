@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:mobile/data/database.dart';
+import 'package:mobile/services/import/import_result.dart';
 
 class IncomeSummary {
   IncomeSummary(this.averageLast3Months, this.totalThisMonth);
@@ -56,6 +57,52 @@ class IncomeRepository {
 
   Future<void> remove(int id) {
     return (db.delete(db.incomeEntries)..where((e) => e.id.equals(id))).go();
+  }
+
+  Future<({int inserted, int skipped})> bulkImport(
+    List<ParsedTransaction> items,
+  ) {
+    return db.transaction(() async {
+      var inserted = 0;
+      var skipped = 0;
+
+      for (final item in items) {
+        final windowStart = item.date.subtract(const Duration(days: 1));
+        final windowEnd = item.date.add(const Duration(days: 1));
+        final duplicate =
+            await (db.select(db.incomeEntries)
+                  ..where(
+                    (e) =>
+                        e.source.equals(item.description) &
+                        e.amount.equals(item.amount) &
+                        e.date.isBiggerOrEqualValue(windowStart) &
+                        e.date.isSmallerOrEqualValue(windowEnd),
+                  )
+                  ..limit(1))
+                .getSingleOrNull();
+
+        if (duplicate != null) {
+          skipped++;
+          continue;
+        }
+
+        final now = DateTime.now();
+        await db
+            .into(db.incomeEntries)
+            .insert(
+              IncomeEntriesCompanion.insert(
+                amount: item.amount,
+                date: item.date,
+                source: item.description,
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+        inserted++;
+      }
+
+      return (inserted: inserted, skipped: skipped);
+    });
   }
 
   Future<List<IncomeEntry>> watchList({int? month, int? year}) async {

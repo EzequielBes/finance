@@ -2,6 +2,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/repositories/income_repository.dart';
+import 'package:mobile/services/import/import_result.dart';
 
 void main() {
   late AppDatabase db;
@@ -20,6 +21,40 @@ void main() {
     final jan = await repo.watchList(month: 1, year: 2026);
     expect(jan.length, 1);
     expect(jan.first.source, 'Salário');
+  });
+
+  test('bulkImport inserts new income entries and returns counts', () async {
+    final result = await repo.bulkImport([
+      ParsedTransaction(
+        description: 'Salário Janeiro',
+        amount: 3000.0,
+        date: DateTime(2026, 1, 5),
+        type: ParsedTransactionType.income,
+        importSource: 'nubank_csv',
+      ),
+    ]);
+    expect(result.inserted, 1);
+    expect(result.skipped, 0);
+    final rows = await repo.watchList();
+    expect(rows.length, 1);
+    expect(rows.first.source, 'Salário Janeiro');
+  });
+
+  test('bulkImport skips an entry that already exists within a 1-day window', () async {
+    await repo.create(amount: 3000.0, date: DateTime(2026, 1, 5), source: 'Salário Janeiro');
+
+    final result = await repo.bulkImport([
+      ParsedTransaction(
+        description: 'Salário Janeiro',
+        amount: 3000.0,
+        date: DateTime(2026, 1, 6),
+        type: ParsedTransactionType.income,
+        importSource: 'nubank_csv',
+      ),
+    ]);
+
+    expect(result.inserted, 0);
+    expect(result.skipped, 1);
   });
 
   test('remove deletes entry', () async {

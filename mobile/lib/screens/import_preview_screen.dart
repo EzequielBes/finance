@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/providers/income_provider.dart';
 import 'package:mobile/providers/transactions_provider.dart';
 import 'package:mobile/services/import/import_result.dart';
 import 'package:mobile/settings/app_settings.dart';
@@ -22,24 +23,22 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
 
   Future<void> _confirmImport() async {
     setState(() => _importing = true);
-    final repo = ref.read(transactionsRepositoryProvider);
+    final transactionsRepo = ref.read(transactionsRepositoryProvider);
+    final incomeRepo = ref.read(incomeRepositoryProvider);
     final expenseItems = widget.result.transactions
         .where((tx) => tx.type == ParsedTransactionType.expense)
         .toList();
-    final skippedIncomeCount =
-        widget.result.transactions.length - expenseItems.length;
+    final incomeItems = widget.result.transactions
+        .where((tx) => tx.type == ParsedTransactionType.income)
+        .toList();
     try {
-      final result = await repo.bulkImport(expenseItems);
+      final expenseResult = await transactionsRepo.bulkImport(expenseItems);
+      final incomeResult = await incomeRepo.bulkImport(incomeItems);
       if (!mounted) return;
-      final incomeNote = skippedIncomeCount > 0
-          ? ' ($skippedIncomeCount receitas não importadas — importação de receitas ainda não suportada)'
-          : '';
+      final inserted = expenseResult.inserted + incomeResult.inserted;
+      final skipped = expenseResult.skipped + incomeResult.skipped;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${result.inserted} importadas, ${result.skipped} já existiam$incomeNote',
-          ),
-        ),
+        SnackBar(content: Text('$inserted importadas, $skipped já existiam')),
       );
       Navigator.of(context).pop();
     } catch (e) {
