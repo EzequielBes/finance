@@ -21,6 +21,15 @@ class _MovementsScreenState extends State<MovementsScreen> {
   DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
   int _refreshCounter = 0;
 
+  TabController? _tabController;
+  int _subTabIndex = 0;
+
+  void _handleTabChange() {
+    final controller = _tabController;
+    if (controller == null || controller.indexIsChanging) return;
+    setState(() => _subTabIndex = controller.index);
+  }
+
   Future<void> _importStatement() async {
     final picked = await FilePicker.pickFiles(
       type: FileType.custom,
@@ -60,57 +69,75 @@ class _MovementsScreenState extends State<MovementsScreen> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
-      child: Scaffold(
-        body: Column(
-          children: [
-            SafeArea(
-              bottom: false,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: MonthSelector(
-                      month: _month,
-                      onChanged: (month) => setState(() => _month = month),
-                    ),
+      child: Builder(
+        builder: (context) {
+          final controller = DefaultTabController.of(context);
+          if (_tabController != controller) {
+            _tabController?.removeListener(_handleTabChange);
+            _tabController = controller;
+            _tabController!.addListener(_handleTabChange);
+          }
+
+          return Scaffold(
+            body: Column(
+              children: [
+                SafeArea(
+                  bottom: false,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: MonthSelector(
+                          month: _month,
+                          onChanged: (month) => setState(() => _month = month),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.upload_file_outlined),
+                        tooltip: 'Importar extrato',
+                        onPressed: _importStatement,
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.upload_file_outlined),
-                    tooltip: 'Importar extrato',
-                    onPressed: _importStatement,
+                ),
+                const TabBar(
+                  dividerColor: AppColors.border,
+                  indicatorColor: AppColors.accentPrimary,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  labelColor: AppColors.textPrimary,
+                  unselectedLabelColor: AppColors.textSecondary,
+                  tabs: [
+                    Tab(text: 'Transações'),
+                    Tab(text: 'Receitas'),
+                  ],
+                ),
+                Expanded(
+                  child: IndexedStack(
+                    index: _subTabIndex,
+                    children: [
+                      TransactionsScreen(
+                        key: ValueKey('transactions-$_refreshCounter'),
+                        embedded: true,
+                        selectedMonth: _month,
+                      ),
+                      IncomeScreen(
+                        key: ValueKey('income-$_refreshCounter'),
+                        embedded: true,
+                        selectedMonth: _month,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            const TabBar(
-              dividerColor: AppColors.border,
-              indicatorColor: AppColors.accentPrimary,
-              indicatorSize: TabBarIndicatorSize.tab,
-              labelColor: AppColors.textPrimary,
-              unselectedLabelColor: AppColors.textSecondary,
-              tabs: [
-                Tab(text: 'Transações'),
-                Tab(text: 'Receitas'),
+                ),
               ],
             ),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  TransactionsScreen(
-                    key: ValueKey('transactions-$_refreshCounter'),
-                    embedded: true,
-                    selectedMonth: _month,
-                  ),
-                  IncomeScreen(
-                    key: ValueKey('income-$_refreshCounter'),
-                    embedded: true,
-                    selectedMonth: _month,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _tabController?.removeListener(_handleTabChange);
+    super.dispose();
   }
 }
