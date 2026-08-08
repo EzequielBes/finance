@@ -6,7 +6,7 @@ import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/categories_provider.dart';
 import 'package:mobile/providers/transactions_provider.dart';
 import 'package:mobile/repositories/categories_repository.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/widgets/transaction_card.dart';
 import 'package:mobile/widgets/transaction_form_sheet.dart';
 
@@ -124,7 +124,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         .remove(group.current.id);
                     _load();
                   },
-                  backgroundColor: AppColors.accentDanger,
+                  backgroundColor: LiquidGlassColors.negative,
                   foregroundColor: Colors.white,
                   icon: Icons.delete_outline,
                   label: 'Excluir',
