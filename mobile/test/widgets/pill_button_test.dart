@@ -63,4 +63,22 @@ void main() {
     final text = tester.widget<Text>(find.text('Categoria'));
     expect(text.style?.fontWeight, FontWeight.w500);
   });
+
+  testWidgets('does not expand to fill available width when wrapped', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SizedBox(
+          width: 800,
+          child: Wrap(
+            children: [
+              PillButton(label: 'Curto', onPressed: () {}),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final size = tester.getSize(find.byType(PillButton));
+    expect(size.width, lessThan(400));
+  });
 }

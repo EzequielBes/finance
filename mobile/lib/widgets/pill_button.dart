@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mobile/theme/liquid_glass_theme.dart';
 
 enum PillButtonSize { medium, small }
@@ -60,12 +59,7 @@ class _PillButtonState extends State<PillButton> {
                     : LiquidGlassColors.glassFill,
                 borderRadius: BorderRadius.circular(LiquidGlassRadius.pill),
                 child: InkWell(
-                  onTap: widget.onPressed == null
-                      ? null
-                      : () {
-                          HapticFeedback.lightImpact();
-                          widget.onPressed!();
-                        },
+                  onTap: widget.onPressed,
                   borderRadius: BorderRadius.circular(LiquidGlassRadius.pill),
                   child: Container(
                     padding: EdgeInsets.symmetric(
@@ -77,12 +71,12 @@ class _PillButtonState extends State<PillButton> {
                             borderRadius:
                                 BorderRadius.circular(LiquidGlassRadius.pill),
                             border: Border.all(
-                              color: LiquidGlassColors.glassBorder,
+                              color: LiquidGlassColors.textPrimary
+                                  .withValues(alpha: 0.6),
                               width: 1.5,
                             ),
                           )
                         : null,
-                    alignment: Alignment.center,
                     child: Text(
                       widget.label,
                       style: LiquidGlassTypography.body.copyWith(
