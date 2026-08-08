@@ -17,10 +17,14 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveIntensity = MediaQuery.of(context).highContrast
+        ? GlassIntensity.opaque
+        : intensity;
+
     final content = Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: LiquidGlassColors.glassFill.withValues(alpha: intensity.fillAlpha),
+        color: LiquidGlassColors.glassFill.withValues(alpha: effectiveIntensity.fillAlpha),
         borderRadius: BorderRadius.circular(LiquidGlassRadius.card),
         border: Border.all(color: LiquidGlassColors.glassBorder),
         boxShadow: const [
@@ -36,12 +40,12 @@ class GlassCard extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(LiquidGlassRadius.card),
-      child: intensity.blurSigma == 0
+      child: effectiveIntensity.blurSigma == 0
           ? content
           : BackdropFilter(
               filter: ImageFilter.blur(
-                sigmaX: intensity.blurSigma,
-                sigmaY: intensity.blurSigma,
+                sigmaX: effectiveIntensity.blurSigma,
+                sigmaY: effectiveIntensity.blurSigma,
               ),
               child: content,
             ),
