@@ -22,7 +22,7 @@ class _MovementsScreenState extends State<MovementsScreen> {
   int _refreshCounter = 0;
 
   Future<void> _importStatement() async {
-    final picked = await FilePicker.platform.pickFiles(
+    final picked = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv'],
     );
