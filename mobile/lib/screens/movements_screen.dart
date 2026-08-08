@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile/screens/import_preview_screen.dart';
 import 'package:mobile/screens/income_screen.dart';
 import 'package:mobile/screens/transactions_screen.dart';
+import 'package:mobile/services/import/bank_import_service.dart';
 import 'package:mobile/services/import/import_result.dart';
-import 'package:mobile/services/import/parser_dispatcher.dart';
 import 'package:mobile/theme/app_theme.dart';
 import 'package:mobile/widgets/month_selector.dart';
 
@@ -31,7 +31,7 @@ class _MovementsScreenState extends State<MovementsScreen> {
     ImportResult? result;
     try {
       final content = await File(picked.files.single.path!).readAsString();
-      result = dispatchImport(content);
+      result = await const BankImportService().parse(content);
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
