@@ -29,15 +29,13 @@ class GlassCard extends StatelessWidget {
     final content = Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: LiquidGlassColors.glassFill.withValues(alpha: effectiveIntensity.fillAlpha),
+        color: LiquidGlassColors.glassFill.withValues(
+          alpha: effectiveIntensity.fillAlpha,
+        ),
         borderRadius: effectiveRadius,
         border: Border.all(color: LiquidGlassColors.glassBorder),
         boxShadow: const [
-          BoxShadow(
-            color: Colors.white24,
-            blurRadius: 12,
-            spreadRadius: -8,
-          ),
+          BoxShadow(color: Colors.white24, blurRadius: 12, spreadRadius: -8),
         ],
       ),
       child: child,

@@ -96,8 +96,8 @@ class _TransactionCardState extends State<TransactionCard> {
                   setState(() => _expanded = !_expanded);
                 }
               : null,
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 5),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5),
             child: GlassCard(
               intensity: GlassIntensity.opaque,
               borderRadius: BorderRadius.only(
@@ -108,96 +108,95 @@ class _TransactionCardState extends State<TransactionCard> {
               ),
               padding: const EdgeInsets.all(14),
               child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 21,
-                  backgroundColor: avatarColor.withValues(alpha: 0.2),
-                  child: Icon(
-                    categoryIconFor(category?.icon),
-                    color: avatarColor,
-                    size: 20,
+                children: [
+                  CircleAvatar(
+                    radius: 21,
+                    backgroundColor: avatarColor.withValues(alpha: 0.2),
+                    child: Icon(
+                      categoryIconFor(category?.icon),
+                      color: avatarColor,
+                      size: 20,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              current.description,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: LiquidGlassColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          if (group.isInstallmentGroup) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: LiquidGlassColors.accentPrimary.withValues(
-                                  alpha: 0.18,
-                                ),
-                                borderRadius: BorderRadius.circular(999),
-                              ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
                               child: Text(
-                                '${current.installmentsCurrent}/${current.installmentsTotal}',
+                                current.description,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  color: LiquidGlassColors.accentPrimary,
-                                  fontSize: 11,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w600,
+                                  color: LiquidGlassColors.textPrimary,
                                 ),
                               ),
                             ),
+                            if (group.isInstallmentGroup) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: LiquidGlassColors.accentPrimary
+                                      .withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  '${current.installmentsCurrent}/${current.installmentsTotal}',
+                                  style: const TextStyle(
+                                    color: LiquidGlassColors.accentPrimary,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        category != null
-                            ? '${category.name} · ${formatShortDate(current.date)}'
-                            : formatShortDate(current.date),
-                        style: const TextStyle(
-                          color: LiquidGlassColors.textSecondary,
-                          fontSize: 12.5,
                         ),
-                      ),
+                        const SizedBox(height: 3),
+                        Text(
+                          category != null
+                              ? '${category.name} · ${formatShortDate(current.date)}'
+                              : formatShortDate(current.date),
+                          style: const TextStyle(
+                            color: LiquidGlassColors.textSecondary,
+                            fontSize: 12.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    '− ${formatMoney(current.amount, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
+                    style: TextStyle(
+                      color: isExpense
+                          ? LiquidGlassColors.negative
+                          : LiquidGlassColors.positive,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    tooltip: 'Opções da transação',
+                    icon: const Icon(
+                      Icons.more_vert,
+                      color: LiquidGlassColors.textSecondary,
+                    ),
+                    onSelected: (value) =>
+                        value == 'edit' ? _edit() : widget.onDelete(),
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(value: 'edit', child: Text('Editar')),
+                      PopupMenuItem(value: 'delete', child: Text('Excluir')),
                     ],
                   ),
-                ),
-                Text(
-                  '− ${formatMoney(current.amount, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
-                  style: TextStyle(
-                    color: isExpense
-                        ? LiquidGlassColors.negative
-                        : LiquidGlassColors.positive,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                  ),
-                ),
-                PopupMenuButton<String>(
-                  tooltip: 'Opções da transação',
-                  icon: const Icon(
-                    Icons.more_vert,
-                    color: LiquidGlassColors.textSecondary,
-                  ),
-                  onSelected: (value) =>
-                      value == 'edit' ? _edit() : widget.onDelete(),
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'edit', child: Text('Editar')),
-                    PopupMenuItem(value: 'delete', child: Text('Excluir')),
-                  ],
-                ),
-              ],
+                ],
               ),
             ),
           ),
