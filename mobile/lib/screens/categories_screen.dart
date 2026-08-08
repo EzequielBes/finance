@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/categories_provider.dart';
 import 'package:mobile/repositories/categories_repository.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/category_icons.dart';
 import 'package:mobile/widgets/category_form_sheet.dart';
+import 'package:mobile/widgets/glass_card.dart';
 import 'package:mobile/widgets/screen_header.dart';
 import 'package:mobile/data/database.dart';
 
@@ -93,26 +94,25 @@ class _CategoryCard extends StatelessWidget {
         ? (item.currentMonthUsage / limit * 100)
         : null;
 
-    Color progressColor = AppColors.accentSuccess;
+    Color progressColor = LiquidGlassColors.positive;
     if (percent != null) {
       if (percent > 100) {
-        progressColor = AppColors.accentDanger;
+        progressColor = LiquidGlassColors.negative;
       } else if (percent >= 80) {
-        progressColor = AppColors.accentPrimary;
+        progressColor = LiquidGlassColors.accentPrimary;
       }
     }
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.bgCard,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: GlassCard(
+          intensity: GlassIntensity.opaque,
           borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
+          padding: const EdgeInsets.all(14),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -138,14 +138,14 @@ class _CategoryCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: LiquidGlassColors.textPrimary,
                         ),
                       ),
                       Text(
                         limit == null ? 'Sem limite definido' : 'Limite mensal',
                         style: const TextStyle(
                           fontSize: 11,
-                          color: AppColors.textSecondary,
+                          color: LiquidGlassColors.textSecondary,
                         ),
                       ),
                     ],
@@ -163,7 +163,7 @@ class _CategoryCard extends StatelessWidget {
                           : 'sem limite',
                       style: const TextStyle(
                         fontSize: 12.5,
-                        color: AppColors.textSecondary,
+                        color: LiquidGlassColors.textSecondary,
                       ),
                     ),
                   ),
@@ -190,6 +190,7 @@ class _CategoryCard extends StatelessWidget {
               ),
             ],
           ],
+          ),
         ),
       ),
     );
@@ -205,65 +206,58 @@ class _ExpenseSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percent = limits > 0 ? (used / limits * 100) : 0.0;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF30261F), AppColors.bgCard],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.accentPrimary.withValues(alpha: 0.22),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'GASTO NESTE MÊS',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 11,
-              letterSpacing: 0.7,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            formatMoney(
-              used,
-              SettingsScope.of(context).currency,
-              SettingsScope.of(context).decimalSeparator,
-            ),
-            style: const TextStyle(
-              fontSize: 27,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.7,
-            ),
-          ),
-          if (limits > 0) ...[
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(99),
-              child: LinearProgressIndicator(
-                value: (percent / 100).clamp(0, 1),
-                minHeight: 7,
-                color: percent > 90
-                    ? AppColors.accentDanger
-                    : AppColors.accentPrimary,
-                backgroundColor: Colors.white.withValues(alpha: 0.07),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '${percent.toStringAsFixed(0)}% dos limites definidos',
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: GlassCard(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'GASTO NESTE MÊS',
+              style: TextStyle(
+                color: LiquidGlassColors.textSecondary,
                 fontSize: 11,
+                letterSpacing: 0.7,
               ),
             ),
+            const SizedBox(height: 5),
+            Text(
+              formatMoney(
+                used,
+                SettingsScope.of(context).currency,
+                SettingsScope.of(context).decimalSeparator,
+              ),
+              style: const TextStyle(
+                fontSize: 27,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.7,
+              ),
+            ),
+            if (limits > 0) ...[
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(99),
+                child: LinearProgressIndicator(
+                  value: (percent / 100).clamp(0, 1),
+                  minHeight: 7,
+                  color: percent > 90
+                      ? LiquidGlassColors.negative
+                      : LiquidGlassColors.accentPrimary,
+                  backgroundColor: Colors.white.withValues(alpha: 0.07),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${percent.toStringAsFixed(0)}% dos limites definidos',
+                style: const TextStyle(
+                  color: LiquidGlassColors.textSecondary,
+                  fontSize: 11,
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
