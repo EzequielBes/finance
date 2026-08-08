@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +9,8 @@ import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/categories_provider.dart';
 import 'package:mobile/providers/transactions_provider.dart';
 import 'package:mobile/repositories/categories_repository.dart';
+import 'package:mobile/screens/import_preview_screen.dart';
+import 'package:mobile/services/import/parser_dispatcher.dart';
 import 'package:mobile/theme/app_theme.dart';
 import 'package:mobile/widgets/transaction_card.dart';
 import 'package:mobile/widgets/transaction_form_sheet.dart';
@@ -88,6 +93,30 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     return groups;
   }
 
+  Future<void> _importStatement() async {
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+    );
+    if (picked == null || picked.files.single.path == null) return;
+
+    final content = await File(picked.files.single.path!).readAsString();
+    final result = dispatchImport(content);
+
+    if (!mounted) return;
+    if (result == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Formato não reconhecido')),
+      );
+      return;
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ImportPreviewScreen(result: result)),
+    );
+    _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesProvider);
@@ -98,7 +127,18 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final groups = _groupByInstallment(_items, categoriesById);
 
     return Scaffold(
-      appBar: widget.embedded ? null : AppBar(title: const Text('Transações')),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: const Text('Transações'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.upload_file_outlined),
+                  tooltip: 'Importar extrato',
+                  onPressed: _importStatement,
+                ),
+              ],
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await showTransactionFormSheet(context, ref);
