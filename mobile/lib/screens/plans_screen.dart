@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/plans_provider.dart';
 import 'package:mobile/screens/plan_detail_screen.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/date_format.dart';
 import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/plan_icons.dart';
+import 'package:mobile/widgets/glass_card.dart';
 import 'package:mobile/widgets/plan_form_sheet.dart';
 import 'package:mobile/widgets/screen_header.dart';
 
@@ -38,7 +39,9 @@ class PlansScreen extends ConsumerWidget {
                     child: Center(
                       child: Text(
                         'Nenhum plano criado ainda',
-                        style: TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(
+                          color: LiquidGlassColors.textSecondary,
+                        ),
                       ),
                     ),
                   ),
@@ -91,129 +94,134 @@ class PlansScreen extends ConsumerWidget {
                       return Container(
                         key: ValueKey(item.plan.id),
                         margin: const EdgeInsets.symmetric(vertical: 5),
-                        padding: const EdgeInsets.all(17),
                         decoration: BoxDecoration(
-                          color: AppColors.bgCard,
                           borderRadius: BorderRadius.circular(18),
                           border: Border(
                             left: BorderSide(color: color, width: 3),
                           ),
                         ),
-                        child: InkWell(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  PlanDetailScreen(planId: item.plan.id),
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          item.plan.name,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          item.plan.deadline == null
-                                              ? 'Sem prazo definido'
-                                              : 'Meta até ${formatMonthYear(item.plan.deadline!, SettingsScope.of(context).dateFormat)}',
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            color: AppColors.textSecondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  ReorderableDragStartListener(
-                                    index: i,
-                                    child: const Padding(
-                                      padding: EdgeInsets.all(10),
-                                      child: Icon(
-                                        planDragHandleIcon,
-                                        color: AppColors.textSecondary,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                        child: GlassCard(
+                          intensity: GlassIntensity.opaque,
+                          padding: const EdgeInsets.all(17),
+                          child: InkWell(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    PlanDetailScreen(planId: item.plan.id),
                               ),
-                              const SizedBox(height: 15),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      '${formatMoney(item.plan.currentSavings, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)} guardados',
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: AppColors.accentSuccess,
-                                        fontWeight: FontWeight.w700,
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item.plan.name,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            item.plan.deadline == null
+                                                ? 'Sem prazo definido'
+                                                : 'Meta até ${formatMonthYear(item.plan.deadline!, SettingsScope.of(context).dateFormat)}',
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: LiquidGlassColors
+                                                  .textSecondary,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
+                                    ReorderableDragStartListener(
+                                      index: i,
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(10),
+                                        child: Icon(
+                                          planDragHandleIcon,
+                                          color:
+                                              LiquidGlassColors.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 15),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        '${formatMoney(item.plan.currentSavings, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)} guardados',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: LiquidGlassColors.positive,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        'meta ${formatMoney(item.plan.targetAmount, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.right,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color:
+                                              LiquidGlassColors.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 9),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(999),
+                                  child: LinearProgressIndicator(
+                                    value: percent / 100,
+                                    minHeight: 7,
+                                    backgroundColor: Colors.white.withValues(
+                                      alpha: 0.06,
+                                    ),
+                                    color: color,
                                   ),
-                                  const SizedBox(width: 8),
-                                  Flexible(
-                                    child: Text(
-                                      'meta ${formatMoney(item.plan.targetAmount, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.right,
+                                ),
+                                const SizedBox(height: 7),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      '${percent.toStringAsFixed(0)}% concluído',
                                       style: const TextStyle(
                                         fontSize: 11,
-                                        color: AppColors.textSecondary,
+                                        color: LiquidGlassColors.textSecondary,
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 9),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(999),
-                                child: LinearProgressIndicator(
-                                  value: percent / 100,
-                                  minHeight: 7,
-                                  backgroundColor: Colors.white.withValues(
-                                    alpha: 0.06,
-                                  ),
-                                  color: color,
+                                    Text(
+                                      'Aporte ${formatMoney(item.plan.monthlyContribution, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}/mês',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: LiquidGlassColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(height: 7),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    '${percent.toStringAsFixed(0)}% concluído',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Aporte ${formatMoney(item.plan.monthlyContribution, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}/mês',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -244,67 +252,60 @@ class _PlansSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF30261F), AppColors.bgCard],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.accentPrimary.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: GlassCard(
+        padding: const EdgeInsets.all(18),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'TOTAL GUARDADO',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: LiquidGlassColors.textSecondary,
+                      letterSpacing: 0.7,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    formatMoney(
+                      saved,
+                      SettingsScope.of(context).currency,
+                      SettingsScope.of(context).decimalSeparator,
+                    ),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                const Text(
-                  'TOTAL GUARDADO',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: AppColors.textSecondary,
-                    letterSpacing: 0.7,
+                Text(
+                  '$count ${count == 1 ? 'plano' : 'planos'}',
+                  style: const TextStyle(
+                    color: LiquidGlassColors.accentPrimary,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 4),
                 Text(
-                  formatMoney(
-                    saved,
-                    SettingsScope.of(context).currency,
-                    SettingsScope.of(context).decimalSeparator,
-                  ),
+                  'Meta total ${formatMoney(target, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
                   style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                    color: LiquidGlassColors.textSecondary,
                   ),
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '$count ${count == 1 ? 'plano' : 'planos'}',
-                style: const TextStyle(
-                  color: AppColors.accentPrimary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Text(
-                'Meta total ${formatMoney(target, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
