@@ -23,16 +23,25 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
   Future<void> _confirmImport() async {
     setState(() => _importing = true);
     final repo = ref.read(transactionsRepositoryProvider);
-    final result = await repo.bulkImport(widget.result.transactions);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${result.inserted} importadas, ${result.skipped} já existiam',
+    try {
+      final result = await repo.bulkImport(widget.result.transactions);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${result.inserted} importadas, ${result.skipped} já existiam',
+          ),
         ),
-      ),
-    );
-    Navigator.of(context).pop();
+      );
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao importar: $e')));
+    } finally {
+      if (mounted) setState(() => _importing = false);
+    }
   }
 
   @override
