@@ -1,6 +1,6 @@
 // mobile/lib/widgets/screen_header.dart
 import 'package:flutter/material.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 
 /// Large title header used atop list screens (Despesas, Planos), replacing
 /// the generic AppBar title/subtitle stack with a badge that carries a live
@@ -34,14 +34,14 @@ class ScreenHeader extends StatelessWidget {
                     fontSize: 30,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.9,
-                    color: AppColors.textPrimary,
+                    color: LiquidGlassColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   subtitle,
                   style: const TextStyle(
-                    color: AppColors.textSecondary,
+                    color: LiquidGlassColors.textSecondary,
                     fontSize: 12.5,
                   ),
                 ),
@@ -52,16 +52,16 @@ class ScreenHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             decoration: BoxDecoration(
-              color: AppColors.accentPrimary.withValues(alpha: 0.14),
+              color: LiquidGlassColors.accentPrimary.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
-                color: AppColors.accentPrimary.withValues(alpha: 0.3),
+                color: LiquidGlassColors.accentPrimary.withValues(alpha: 0.3),
               ),
             ),
             child: Text(
               badge,
               style: const TextStyle(
-                color: AppColors.accentPrimary,
+                color: LiquidGlassColors.accentPrimary,
                 fontWeight: FontWeight.w800,
                 fontSize: 14,
               ),

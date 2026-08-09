@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 
 class MonthSelector extends StatelessWidget {
   const MonthSelector({
@@ -36,7 +36,7 @@ class MonthSelector extends StatelessWidget {
                   '${month.year}',
                   style: const TextStyle(
                     fontSize: 11,
-                    color: AppColors.textSecondary,
+                    color: LiquidGlassColors.textSecondary,
                   ),
                 ),
               ],
