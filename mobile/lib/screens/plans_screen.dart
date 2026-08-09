@@ -10,7 +10,6 @@ import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/plan_icons.dart';
 import 'package:mobile/widgets/glass_card.dart';
 import 'package:mobile/widgets/plan_form_sheet.dart';
-import 'package:mobile/widgets/screen_header.dart';
 
 class PlansScreen extends ConsumerWidget {
   const PlansScreen({super.key});
@@ -30,10 +29,15 @@ class PlansScreen extends ConsumerWidget {
             return SafeArea(
               child: Column(
                 children: [
-                  const ScreenHeader(
-                    title: 'Planos',
-                    subtitle: 'Metas que dão direção ao seu dinheiro',
-                    badge: '0',
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+                    child: Text(
+                      'Metas que dão direção ao seu dinheiro',
+                      style: TextStyle(
+                        color: LiquidGlassColors.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
                   const Expanded(
                     child: Center(
@@ -60,10 +64,15 @@ class PlansScreen extends ConsumerWidget {
           return SafeArea(
             child: Column(
               children: [
-                ScreenHeader(
-                  title: 'Planos',
-                  subtitle: 'Metas que dão direção ao seu dinheiro',
-                  badge: '${plans.length}',
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+                  child: Text(
+                    'Metas que dão direção ao seu dinheiro',
+                    style: TextStyle(
+                      color: LiquidGlassColors.textSecondary,
+                      fontSize: 13,
+                    ),
+                  ),
                 ),
                 _PlansSummary(
                   saved: saved,
