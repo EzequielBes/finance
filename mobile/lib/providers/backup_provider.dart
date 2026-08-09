@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/database_provider.dart';
 import 'package:mobile/repositories/backup_repository.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -19,9 +19,10 @@ Future<void> exportBackup(BuildContext context, WidgetRef ref) async {
   final repo = ref.read(backupRepositoryProvider);
   final json = await repo.buildExportJson();
   final directory = await getTemporaryDirectory();
-  final timestamp = DateTime.now()
-      .toIso8601String()
-      .replaceAll(RegExp(r'[:.]'), '-');
+  final timestamp = DateTime.now().toIso8601String().replaceAll(
+    RegExp(r'[:.]'),
+    '-',
+  );
   final file = File('${directory.path}/backup_$timestamp.json');
   await file.writeAsString(jsonEncode(json));
 
@@ -54,7 +55,7 @@ Future<void> restoreBackup(BuildContext context, WidgetRef ref) async {
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      backgroundColor: AppColors.bgCard,
+      backgroundColor: LiquidGlassColors.surface,
       title: const Text('Restaurar backup?'),
       content: const Text(
         'Isso vai substituir todos os dados atuais (transações, receitas, categorias e planos). Essa ação não pode ser desfeita.',
@@ -68,7 +69,7 @@ Future<void> restoreBackup(BuildContext context, WidgetRef ref) async {
           onPressed: () => Navigator.pop(ctx, true),
           child: const Text(
             'Restaurar',
-            style: TextStyle(color: AppColors.accentDanger),
+            style: TextStyle(color: LiquidGlassColors.negative),
           ),
         ),
       ],
@@ -88,7 +89,9 @@ Future<void> restoreBackup(BuildContext context, WidgetRef ref) async {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Este backup foi feito com uma versão mais nova do app.'),
+          content: Text(
+            'Este backup foi feito com uma versão mais nova do app.',
+          ),
         ),
       );
     }
