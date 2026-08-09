@@ -8,5 +8,5 @@ final categoriesRepositoryProvider = Provider<CategoriesRepository>((ref) {
 });
 
 final categoriesProvider = StreamProvider<List<CategoryWithUsage>>((ref) {
-  return ref.watch(categoriesRepositoryProvider).watchAll();
+  return ref.watch(categoriesRepositoryProvider).watchAll(DateTime.now());
 });
