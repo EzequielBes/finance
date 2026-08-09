@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class LiquidGlassColors {
   static const background = Color(0xFF12161A);
   static const surface = Color(0xFF1B2127);
-  static const glassFill = Color(0xFF2A3138);
+  static const glassFill = Color(0xFF1F262D);
   static const glassBorder = Color(0x14FFFFFF);
   static const textPrimary = Color(0xFFEDF1F4);
   static const textSecondary = Color(0xFF8B94A0);
