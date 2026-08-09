@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/categories_provider.dart';
 import 'package:mobile/screens/home_shell.dart';
 import 'package:mobile/settings/app_settings.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_material_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +41,7 @@ class AnalisadorFinanceiroApp extends ConsumerWidget {
       settings: settings,
       child: MaterialApp(
         title: 'AnalisadorFinanceiro',
-        theme: buildAppTheme(),
+        theme: buildLiquidGlassMaterialTheme(),
         home: const HomeShell(),
       ),
     );
