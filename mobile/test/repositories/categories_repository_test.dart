@@ -74,7 +74,7 @@ void main() {
       ),
     );
 
-    final results = await repo.watchAll().first;
+    final results = await repo.watchAll(DateTime.now()).first;
     final target = results.firstWhere((c) => c.category.id == catId);
     expect(target.currentMonthUsage, 230.0);
   });
@@ -125,7 +125,7 @@ void main() {
       ),
     );
 
-    final results = await repo.watchAll().first;
+    final results = await repo.watchAll(DateTime.now()).first;
     final target = results.firstWhere((c) => c.category.id == catId);
     expect(target.currentMonthUsage, 50.0);
   });
@@ -141,7 +141,7 @@ void main() {
     );
 
     final emissions = <double>[];
-    final subscription = repo.watchAll().listen((results) {
+    final subscription = repo.watchAll(DateTime.now()).listen((results) {
       final target = results.firstWhere((c) => c.category.id == catId);
       emissions.add(target.currentMonthUsage);
     });
@@ -218,5 +218,94 @@ void main() {
     await repo.setActive(id, true);
     row = await (db.select(db.categories)..where((c) => c.id.equals(id))).getSingle();
     expect(row.isActive, true);
+  });
+
+  test('watchAll sums the full month for a past month, ignoring "today" cutoff', () async {
+    final now = DateTime.now();
+    // Usa o mês anterior ao atual como "mês passado" fixo — funciona em
+    // qualquer dia do ano (DateTime normaliza mês 0 para dezembro do ano
+    // anterior corretamente).
+    final pastMonth = DateTime(now.year, now.month - 1);
+    final catId = await repo.create(
+      name: 'Alimentação',
+      type: CategoryType.expense,
+      color: '#7a9b7e',
+      icon: 'tag',
+    );
+    // Transação no primeiro dia do mês passado.
+    await db.into(db.transactions).insert(
+      TransactionsCompanion.insert(
+        categoryId: Value(catId),
+        description: 'Início do mês',
+        amount: 100.0,
+        date: DateTime(pastMonth.year, pastMonth.month, 1),
+        type: TransactionType.expense,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    // Transação no último dia do mês passado — deve contar mesmo sendo
+    // "depois de hoje" nesse mês histórico (mês já fechado).
+    final lastDay = DateTime(pastMonth.year, pastMonth.month + 1, 0).day;
+    await db.into(db.transactions).insert(
+      TransactionsCompanion.insert(
+        categoryId: Value(catId),
+        description: 'Fim do mês',
+        amount: 200.0,
+        date: DateTime(pastMonth.year, pastMonth.month, lastDay),
+        type: TransactionType.expense,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+
+    final results = await repo.watchAll(pastMonth).first;
+    final target = results.firstWhere((c) => c.category.id == catId);
+    expect(target.currentMonthUsage, 300.0);
+  });
+
+  test('watchAll for the current month still sums only up to today', () async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0).day;
+    if (today.day >= lastDayOfMonth) {
+      // Near/at month-end: no valid future-in-month date exists to test.
+      return;
+    }
+    final futureDay = (today.day + 5) <= lastDayOfMonth ? today.day + 5 : lastDayOfMonth;
+    final futureDate = DateTime(now.year, now.month, futureDay);
+
+    final catId = await repo.create(
+      name: 'Lazer',
+      type: CategoryType.expense,
+      color: '#c17a54',
+      icon: 'tag',
+    );
+    await db.into(db.transactions).insert(
+      TransactionsCompanion.insert(
+        categoryId: Value(catId),
+        description: 'Hoje',
+        amount: 50.0,
+        date: today,
+        type: TransactionType.expense,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    await db.into(db.transactions).insert(
+      TransactionsCompanion.insert(
+        categoryId: Value(catId),
+        description: 'Futura no mesmo mês',
+        amount: 500.0,
+        date: futureDate,
+        type: TransactionType.expense,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+
+    final results = await repo.watchAll(DateTime(now.year, now.month)).first;
+    final target = results.firstWhere((c) => c.category.id == catId);
+    expect(target.currentMonthUsage, 50.0);
   });
 }

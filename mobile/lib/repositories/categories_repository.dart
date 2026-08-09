@@ -153,7 +153,7 @@ class CategoriesRepository {
     );
   }
 
-  Stream<List<CategoryWithUsage>> watchAll() {
+  Stream<List<CategoryWithUsage>> watchAll(DateTime month) {
     // This stream must recompute whenever EITHER categories OR transactions
     // change — currentMonthUsage is derived from transactions, so a plain
     // `db.select(db.categories).watch()` (which only tracks the categories
@@ -168,18 +168,20 @@ class CategoriesRepository {
     return StreamGroup.merge<void>([
       categoriesChanged,
       transactionsChanged,
-    ]).asyncMap((_) => _computeUsage());
+    ]).asyncMap((_) => _computeUsage(month));
   }
 
-  Future<List<CategoryWithUsage>> _computeUsage() async {
+  Future<List<CategoryWithUsage>> _computeUsage(DateTime month) async {
     final cats = await db.select(db.categories).get();
     final now = DateTime.now();
-    final monthStart = DateTime(now.year, now.month, 1);
-    // Exclusive upper bound = start of tomorrow, so the range covers
-    // "month-to-date" (day 1 of this month through end of today),
-    // matching the backend's `Transaction.date <= today` rule while
-    // avoiding clock-time-of-day exclusion issues for same-day txs.
-    final todayEnd = DateTime(now.year, now.month, now.day + 1);
+    final isCurrentMonth = month.year == now.year && month.month == now.month;
+    final monthStart = DateTime(month.year, month.month, 1);
+    // Mês atual: soma até hoje (mês-em-curso, paridade com o backend que
+    // filtra Transaction.date <= today). Mês passado: soma o mês inteiro,
+    // já que esse mês está fechado e o total histórico deve ficar completo.
+    final monthEnd = isCurrentMonth
+        ? DateTime(now.year, now.month, now.day + 1)
+        : DateTime(month.year, month.month + 1, 1);
     final result = <CategoryWithUsage>[];
     for (final cat in cats) {
       final txs =
@@ -188,7 +190,7 @@ class CategoriesRepository {
                     t.categoryId.equals(cat.id) &
                     t.type.equalsValue(TransactionType.expense) &
                     t.date.isBiggerOrEqualValue(monthStart) &
-                    t.date.isSmallerThanValue(todayEnd),
+                    t.date.isSmallerThanValue(monthEnd),
               ))
               .get();
       final usage = txs.fold<double>(0.0, (sum, t) => sum + t.amount);
