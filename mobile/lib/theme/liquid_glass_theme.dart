@@ -35,16 +35,16 @@ enum GlassIntensity {
   };
 
   double get fillAlpha => switch (this) {
-    GlassIntensity.full => 0.38,
-    GlassIntensity.reduced => 0.50,
-    GlassIntensity.opaque => 0.80,
+    GlassIntensity.full => 0.20,
+    GlassIntensity.reduced => 0.32,
+    GlassIntensity.opaque => 0.60,
   };
 }
 
 /// Raios de borda nomeados por uso — pílula só em botões/chips, não em cards.
 class LiquidGlassRadius {
   static const pill = 999.0;
-  static const card = 20.0;
+  static const card = 12.0;
   static const input = 14.0;
 }
 
