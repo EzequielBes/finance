@@ -7,10 +7,11 @@ import 'package:mobile/providers/plans_provider.dart';
 import 'package:mobile/providers/savings_analysis_provider.dart';
 import 'package:mobile/repositories/plans_repository.dart';
 import 'package:mobile/repositories/savings_analysis_repository.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/plan_icons.dart';
+import 'package:mobile/widgets/glass_card.dart';
 
 class SavingsPlanSection extends ConsumerStatefulWidget {
   const SavingsPlanSection({
@@ -79,11 +80,8 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        borderRadius: BorderRadius.circular(16),
-      ),
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           InkWell(
@@ -100,7 +98,7 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
                   Icon(
                     planSavingsIcon,
                     size: 18,
-                    color: AppColors.accentPrimary,
+                    color: LiquidGlassColors.accentPrimary,
                   ),
                   const SizedBox(width: 8),
                   const Text(
@@ -116,7 +114,7 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
                     duration: const Duration(milliseconds: 200),
                     child: const Icon(
                       Icons.expand_more,
-                      color: AppColors.textSecondary,
+                      color: LiquidGlassColors.textSecondary,
                     ),
                   ),
                 ],
@@ -145,20 +143,26 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
       children: [
         const Text(
           'Defina quanto quer economizar no total, o sistema sugere como distribuir entre suas categorias.',
-          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          style: TextStyle(
+            fontSize: 12,
+            color: LiquidGlassColors.textSecondary,
+          ),
         ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.bgInput,
+            color: LiquidGlassColors.surface,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
               const Text(
                 'Economizar',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: LiquidGlassColors.textSecondary,
+                ),
               ),
               const SizedBox(width: 8),
               SizedBox(
@@ -167,7 +171,7 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
                   controller: _targetPercentController,
                   keyboardType: TextInputType.number,
                   style: const TextStyle(
-                    color: AppColors.accentPrimary,
+                    color: LiquidGlassColors.accentPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: 16,
                   ),
@@ -182,7 +186,7 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
               const Text(
                 '%',
                 style: TextStyle(
-                  color: AppColors.accentPrimary,
+                  color: LiquidGlassColors.accentPrimary,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -204,7 +208,10 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
         if (_selectedCuts.isNotEmpty) ...[
           const Text(
             'CATEGORIAS NO PLANO',
-            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+            style: TextStyle(
+              fontSize: 11,
+              color: LiquidGlassColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 8),
           ..._selectedCuts.values.map(
@@ -212,7 +219,7 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.bgInput,
+                color: LiquidGlassColors.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -227,7 +234,7 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
                     icon: Icon(
                       planRemoveIcon,
                       size: 16,
-                      color: AppColors.textSecondary,
+                      color: LiquidGlassColors.textSecondary,
                     ),
                     onPressed: () {
                       setState(() => _selectedCuts.remove(cut.category.id));
@@ -241,7 +248,9 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: AppColors.trackBackground)),
+              border: Border(
+                top: BorderSide(color: LiquidGlassColors.glassBorder),
+              ),
             ),
             child: Row(
               children: [
@@ -258,7 +267,7 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
                   ),
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: AppColors.accentSuccess,
+                    color: LiquidGlassColors.positive,
                   ),
                 ),
               ],
@@ -281,7 +290,10 @@ class _SavingsPlanSectionState extends ConsumerState<SavingsPlanSection> {
             padding: EdgeInsets.symmetric(vertical: 8),
             child: Text(
               'Nenhuma categoria no plano ainda. Toque "Sugerir" ou adicione manualmente.',
-              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 12,
+                color: LiquidGlassColors.textSecondary,
+              ),
             ),
           ),
       ],
