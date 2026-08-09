@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/income_provider.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/date_format.dart';
 import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/money_input_formatter.dart';
+import 'package:mobile/widgets/glass_card.dart';
 
 Future<void> showIncomeFormSheet(
   BuildContext context,
@@ -18,7 +19,11 @@ Future<void> showIncomeFormSheet(
   final sourceController = TextEditingController(text: existing?.source ?? '');
   final amountController = TextEditingController(
     text: existing != null
-        ? formatCents((existing.amount * 100).round(), currency, decimalSeparator)
+        ? formatCents(
+            (existing.amount * 100).round(),
+            currency,
+            decimalSeparator,
+          )
         : '',
   );
   var date = existing?.date ?? DateTime.now();
@@ -26,13 +31,16 @@ Future<void> showIncomeFormSheet(
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.bgCard,
+    backgroundColor: Colors.transparent,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) => SafeArea(
-        child: Padding(
+        child: GlassCard(
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(LiquidGlassRadius.card),
+          ),
           padding: EdgeInsets.only(
             bottom: MediaQuery.viewInsetsOf(ctx).bottom + 20,
             left: 20,
@@ -48,7 +56,9 @@ Future<void> showIncomeFormSheet(
                   width: 38,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.textSecondary.withValues(alpha: 0.5),
+                    color: LiquidGlassColors.textSecondary.withValues(
+                      alpha: 0.5,
+                    ),
                     borderRadius: BorderRadius.circular(99),
                   ),
                 ),
@@ -73,7 +83,9 @@ Future<void> showIncomeFormSheet(
               TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
-                inputFormatters: [MoneyInputFormatter(currency, decimalSeparator)],
+                inputFormatters: [
+                  MoneyInputFormatter(currency, decimalSeparator),
+                ],
                 decoration: InputDecoration(
                   labelText: 'Valor',
                   prefixText: '${currencySymbol(currency)} ',

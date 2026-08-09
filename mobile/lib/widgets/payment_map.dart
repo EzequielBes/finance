@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/repositories/dashboard_repository.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/money_format.dart';
 
@@ -32,7 +32,7 @@ class _PaymentMapState extends State<PaymentMap> {
         padding: EdgeInsets.symmetric(vertical: 18),
         child: Text(
           'Nenhum pagamento previsto para este mês.',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: LiquidGlassColors.textSecondary),
         ),
       );
     }
@@ -86,7 +86,7 @@ class _TodayMarker extends StatelessWidget {
         Text(
           'Hoje',
           style: TextStyle(
-            color: AppColors.accentPrimary,
+            color: LiquidGlassColors.accentPrimary,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -120,19 +120,25 @@ class _PaymentMarker extends StatelessWidget {
                 child: Column(
                   children: [
                     Expanded(
-                      child: Container(width: 1, color: AppColors.border),
+                      child: Container(
+                        width: 1,
+                        color: LiquidGlassColors.glassBorder,
+                      ),
                     ),
                     if (gapDays >= 4)
                       const Text(
                         '···',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: LiquidGlassColors.textSecondary,
                           letterSpacing: 1.5,
                           height: 0.7,
                         ),
                       ),
                     Expanded(
-                      child: Container(width: 1, color: AppColors.border),
+                      child: Container(
+                        width: 1,
+                        color: LiquidGlassColors.glassBorder,
+                      ),
                     ),
                   ],
                 ),
@@ -145,7 +151,7 @@ class _PaymentMarker extends StatelessWidget {
                     ? 'amanhã'
                     : 'em $gapDays dias',
                 style: const TextStyle(
-                  color: AppColors.textSecondary,
+                  color: LiquidGlassColors.textSecondary,
                   fontSize: 11,
                 ),
               ),
@@ -168,7 +174,7 @@ class _PaymentMarker extends StatelessWidget {
                         width: 42,
                         padding: const EdgeInsets.symmetric(vertical: 5),
                         decoration: BoxDecoration(
-                          color: AppColors.bgInput,
+                          color: LiquidGlassColors.glassFill,
                           borderRadius: BorderRadius.circular(9),
                         ),
                         child: Column(
@@ -184,7 +190,7 @@ class _PaymentMarker extends StatelessWidget {
                               _month(event.date.month),
                               style: const TextStyle(
                                 fontSize: 9,
-                                color: AppColors.textSecondary,
+                                color: LiquidGlassColors.textSecondary,
                               ),
                             ),
                           ],
@@ -206,7 +212,7 @@ class _PaymentMarker extends StatelessWidget {
                             Text(
                               event.categoryName ?? 'Pagamento programado',
                               style: const TextStyle(
-                                color: AppColors.textSecondary,
+                                color: LiquidGlassColors.textSecondary,
                                 fontSize: 11,
                               ),
                             ),
@@ -220,7 +226,7 @@ class _PaymentMarker extends StatelessWidget {
                           SettingsScope.of(context).decimalSeparator,
                         ),
                         style: const TextStyle(
-                          color: AppColors.accentDanger,
+                          color: LiquidGlassColors.negative,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -262,9 +268,11 @@ class _MapDot extends StatelessWidget {
       width: active ? 13 : 11,
       height: active ? 13 : 11,
       decoration: BoxDecoration(
-        color: active ? AppColors.accentPrimary : AppColors.bgCard,
+        color: active
+            ? LiquidGlassColors.accentPrimary
+            : LiquidGlassColors.surface,
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.accentPrimary, width: 2),
+        border: Border.all(color: LiquidGlassColors.accentPrimary, width: 2),
       ),
     );
   }

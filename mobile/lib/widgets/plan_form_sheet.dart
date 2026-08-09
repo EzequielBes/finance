@@ -4,10 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/plans_provider.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/money_input_formatter.dart';
+import 'package:mobile/widgets/glass_card.dart';
 
 const _planColorPalette = ['#c17a54', '#7a9b7e', '#8a9bb0', '#b8563a'];
 
@@ -25,12 +26,20 @@ Future<void> showPlanFormSheet(
   );
   final targetController = TextEditingController(
     text: existing != null
-        ? formatCents((existing.targetAmount * 100).round(), currency, decimalSeparator)
+        ? formatCents(
+            (existing.targetAmount * 100).round(),
+            currency,
+            decimalSeparator,
+          )
         : '',
   );
   final contributionController = TextEditingController(
     text: existing != null
-        ? formatCents((existing.monthlyContribution * 100).round(), currency, decimalSeparator)
+        ? formatCents(
+            (existing.monthlyContribution * 100).round(),
+            currency,
+            decimalSeparator,
+          )
         : '',
   );
   var selectedColor = existing?.color ?? _planColorPalette.first;
@@ -39,7 +48,7 @@ Future<void> showPlanFormSheet(
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.bgCard,
+    backgroundColor: Colors.transparent,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -47,7 +56,10 @@ Future<void> showPlanFormSheet(
       builder: (ctx, consumerRef, _) {
         final plansAsync = consumerRef.watch(plansProvider);
         return SafeArea(
-          child: Padding(
+          child: GlassCard(
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(LiquidGlassRadius.card),
+            ),
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(ctx).viewInsets.bottom,
             ),
@@ -142,7 +154,7 @@ Future<void> showPlanFormSheet(
                                   shape: BoxShape.circle,
                                   border: selected
                                       ? Border.all(
-                                          color: AppColors.textPrimary,
+                                          color: LiquidGlassColors.textPrimary,
                                           width: 2,
                                         )
                                       : null,

@@ -5,11 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/categories_provider.dart';
 import 'package:mobile/providers/transactions_provider.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/date_format.dart';
 import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/money_input_formatter.dart';
+import 'package:mobile/widgets/glass_card.dart';
 
 Future<void> showTransactionFormSheet(
   BuildContext context,
@@ -23,7 +24,11 @@ Future<void> showTransactionFormSheet(
   final decimalSeparator = SettingsScope.of(context).decimalSeparator;
   final amountController = TextEditingController(
     text: existing != null
-        ? formatCents((existing.amount * 100).round(), currency, decimalSeparator)
+        ? formatCents(
+            (existing.amount * 100).round(),
+            currency,
+            decimalSeparator,
+          )
         : '',
   );
   var date = existing?.date ?? DateTime.now();
@@ -34,7 +39,7 @@ Future<void> showTransactionFormSheet(
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.bgCard,
+    backgroundColor: Colors.transparent,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -42,7 +47,10 @@ Future<void> showTransactionFormSheet(
       builder: (ctx, consumerRef, _) {
         final categoriesAsync = consumerRef.watch(categoriesProvider);
         return SafeArea(
-          child: Padding(
+          child: GlassCard(
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(LiquidGlassRadius.card),
+            ),
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(ctx).viewInsets.bottom,
             ),
@@ -96,7 +104,7 @@ Future<void> showTransactionFormSheet(
                         controller: descController,
                         style: const TextStyle(
                           fontSize: 16,
-                          color: AppColors.textPrimary,
+                          color: LiquidGlassColors.textPrimary,
                         ),
                         decoration: const InputDecoration(
                           contentPadding: EdgeInsets.symmetric(
@@ -116,7 +124,7 @@ Future<void> showTransactionFormSheet(
                         ],
                         style: const TextStyle(
                           fontSize: 16,
-                          color: AppColors.textPrimary,
+                          color: LiquidGlassColors.textPrimary,
                         ),
                         decoration: InputDecoration(
                           prefixText: '${currencySymbol(currency)} ',
@@ -134,7 +142,7 @@ Future<void> showTransactionFormSheet(
                         initialValue: categoryId,
                         style: const TextStyle(
                           fontSize: 16,
-                          color: AppColors.textPrimary,
+                          color: LiquidGlassColors.textPrimary,
                         ),
                         decoration: const InputDecoration(
                           contentPadding: EdgeInsets.symmetric(
@@ -193,7 +201,10 @@ Future<void> showTransactionFormSheet(
                             suffixIcon: Icon(Icons.calendar_today_outlined),
                           ),
                           child: Text(
-                            formatFullDate(date, SettingsScope.of(ctx).dateFormat),
+                            formatFullDate(
+                              date,
+                              SettingsScope.of(ctx).dateFormat,
+                            ),
                           ),
                         ),
                       ),
@@ -273,7 +284,7 @@ class _FieldLabel extends StatelessWidget {
         fontSize: 11.5,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.6,
-        color: AppColors.textSecondary,
+        color: LiquidGlassColors.textSecondary,
       ),
     );
   }
@@ -291,7 +302,7 @@ class _TypeToggle extends StatelessWidget {
       height: 52,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.bgInput,
+        color: LiquidGlassColors.glassFill,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Stack(
@@ -307,8 +318,8 @@ class _TypeToggle extends StatelessWidget {
                 curve: Curves.easeOutCubic,
                 decoration: BoxDecoration(
                   color: isExpense
-                      ? AppColors.accentDanger
-                      : AppColors.accentSuccess,
+                      ? LiquidGlassColors.negative
+                      : LiquidGlassColors.positive,
                   borderRadius: BorderRadius.circular(11),
                 ),
               ),
@@ -367,7 +378,9 @@ class _ToggleOption extends StatelessWidget {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: active ? AppColors.bgPrimary : AppColors.textSecondary,
+                color: active
+                    ? LiquidGlassColors.background
+                    : LiquidGlassColors.textSecondary,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -376,8 +389,8 @@ class _ToggleOption extends StatelessWidget {
                     icon,
                     size: 16,
                     color: active
-                        ? AppColors.bgPrimary
-                        : AppColors.textSecondary,
+                        ? LiquidGlassColors.background
+                        : LiquidGlassColors.textSecondary,
                   ),
                   const SizedBox(width: 6),
                   Text(label),
@@ -407,7 +420,7 @@ class _InstallmentsCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
-        color: AppColors.bgInput,
+        color: LiquidGlassColors.glassFill,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -422,7 +435,7 @@ class _InstallmentsCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.accentPrimary,
+                  color: LiquidGlassColors.accentPrimary,
                 ),
               ),
               const Text(
@@ -430,7 +443,7 @@ class _InstallmentsCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textSecondary,
+                  color: LiquidGlassColors.textSecondary,
                 ),
               ),
               const Spacer(),
@@ -439,19 +452,21 @@ class _InstallmentsCard extends StatelessWidget {
                   'de ${formatMoney(perInstallment, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
                   style: const TextStyle(
                     fontSize: 13,
-                    color: AppColors.textSecondary,
+                    color: LiquidGlassColors.textSecondary,
                   ),
                 ),
             ],
           ),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: AppColors.accentPrimary,
-              inactiveTrackColor: AppColors.accentPrimary.withValues(
+              activeTrackColor: LiquidGlassColors.accentPrimary,
+              inactiveTrackColor: LiquidGlassColors.accentPrimary.withValues(
                 alpha: 0.2,
               ),
-              thumbColor: AppColors.accentPrimary,
-              overlayColor: AppColors.accentPrimary.withValues(alpha: 0.15),
+              thumbColor: LiquidGlassColors.accentPrimary,
+              overlayColor: LiquidGlassColors.accentPrimary.withValues(
+                alpha: 0.15,
+              ),
               trackHeight: 6,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 11),
             ),
@@ -472,14 +487,14 @@ class _InstallmentsCard extends StatelessWidget {
                   '1x',
                   style: TextStyle(
                     fontSize: 11,
-                    color: AppColors.textSecondary,
+                    color: LiquidGlassColors.textSecondary,
                   ),
                 ),
                 Text(
                   '24x',
                   style: TextStyle(
                     fontSize: 11,
-                    color: AppColors.textSecondary,
+                    color: LiquidGlassColors.textSecondary,
                   ),
                 ),
               ],

@@ -4,10 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/plans_provider.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/money_input_formatter.dart';
+import 'package:mobile/widgets/glass_card.dart';
 
 Future<void> showPlanContributionSheet(
   BuildContext context,
@@ -23,12 +24,15 @@ Future<void> showPlanContributionSheet(
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.bgCard,
+    backgroundColor: Colors.transparent,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (ctx) => SafeArea(
-      child: Padding(
+      child: GlassCard(
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(LiquidGlassRadius.card),
+        ),
         padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
@@ -41,14 +45,16 @@ Future<void> showPlanContributionSheet(
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: LiquidGlassColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
-                inputFormatters: [MoneyInputFormatter(currency, decimalSeparator)],
+                inputFormatters: [
+                  MoneyInputFormatter(currency, decimalSeparator),
+                ],
                 autofocus: true,
                 decoration: InputDecoration(
                   labelText: 'Valor',
@@ -59,8 +65,8 @@ Future<void> showPlanContributionSheet(
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isDeposit
-                      ? AppColors.accentSuccess
-                      : AppColors.accentDanger,
+                      ? LiquidGlassColors.positive
+                      : LiquidGlassColors.negative,
                 ),
                 onPressed: () async {
                   HapticFeedback.lightImpact();

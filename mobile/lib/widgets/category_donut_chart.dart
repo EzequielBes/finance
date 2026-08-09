@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:mobile/repositories/dashboard_repository.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/money_format.dart';
 
@@ -17,7 +17,7 @@ class CategoryDonutChart extends StatelessWidget {
         child: Center(
           child: Text(
             'Sem gastos este mês',
-            style: TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: LiquidGlassColors.textSecondary),
           ),
         ),
       );
@@ -53,7 +53,7 @@ class CategoryDonutChart extends StatelessWidget {
                         '${c.name} · ${formatMoney(c.total, SettingsScope.of(context).currency, SettingsScope.of(context).decimalSeparator)}',
                         style: const TextStyle(
                           fontSize: 12,
-                          color: AppColors.textPrimary,
+                          color: LiquidGlassColors.textPrimary,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),

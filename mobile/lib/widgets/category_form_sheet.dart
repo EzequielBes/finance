@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/data/database.dart';
 import 'package:mobile/providers/categories_provider.dart';
-import 'package:mobile/theme/app_theme.dart';
+import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/money_format.dart';
 import 'package:mobile/theme/category_icons.dart';
+import 'package:mobile/widgets/glass_card.dart';
 
 const _colorPalette = ['#c17a54', '#7a9b7e', '#8a9bb0', '#b8563a'];
 
@@ -28,12 +29,15 @@ Future<void> showCategoryFormSheet(
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.bgCard,
+    backgroundColor: Colors.transparent,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (ctx) => SafeArea(
-      child: Padding(
+      child: GlassCard(
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(LiquidGlassRadius.card),
+        ),
         padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
         child: StatefulBuilder(
           builder: (ctx, setState) => SingleChildScrollView(
@@ -48,7 +52,7 @@ Future<void> showCategoryFormSheet(
                   controller: nameController,
                   style: const TextStyle(
                     fontSize: 16,
-                    color: AppColors.textPrimary,
+                    color: LiquidGlassColors.textPrimary,
                   ),
                   decoration: const InputDecoration(
                     contentPadding: EdgeInsets.symmetric(
@@ -64,7 +68,7 @@ Future<void> showCategoryFormSheet(
                   initialValue: type,
                   style: const TextStyle(
                     fontSize: 16,
-                    color: AppColors.textPrimary,
+                    color: LiquidGlassColors.textPrimary,
                   ),
                   decoration: const InputDecoration(
                     contentPadding: EdgeInsets.symmetric(
@@ -102,7 +106,7 @@ Future<void> showCategoryFormSheet(
                     ),
                     style: const TextStyle(
                       fontSize: 16,
-                      color: AppColors.textPrimary,
+                      color: LiquidGlassColors.textPrimary,
                     ),
                     decoration: InputDecoration(
                       prefixText:
@@ -132,7 +136,7 @@ Future<void> showCategoryFormSheet(
                             shape: BoxShape.circle,
                             border: selected
                                 ? Border.all(
-                                    color: AppColors.textPrimary,
+                                    color: LiquidGlassColors.textPrimary,
                                     width: 2,
                                   )
                                 : null,
@@ -158,12 +162,14 @@ Future<void> showCategoryFormSheet(
                       child: Container(
                         decoration: BoxDecoration(
                           color: selected
-                              ? AppColors.accentPrimary.withValues(alpha: 0.2)
-                              : AppColors.bgInput,
+                              ? LiquidGlassColors.accentPrimary.withValues(
+                                  alpha: 0.2,
+                                )
+                              : LiquidGlassColors.glassFill,
                           borderRadius: BorderRadius.circular(10),
                           border: selected
                               ? Border.all(
-                                  color: AppColors.accentPrimary,
+                                  color: LiquidGlassColors.accentPrimary,
                                   width: 1.5,
                                 )
                               : null,
@@ -171,8 +177,8 @@ Future<void> showCategoryFormSheet(
                         child: Icon(
                           categoryIconFor(key),
                           color: selected
-                              ? AppColors.accentPrimary
-                              : AppColors.textSecondary,
+                              ? LiquidGlassColors.accentPrimary
+                              : LiquidGlassColors.textSecondary,
                           size: 20,
                         ),
                       ),
@@ -240,7 +246,7 @@ class _FieldLabel extends StatelessWidget {
         fontSize: 11.5,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.6,
-        color: AppColors.textSecondary,
+        color: LiquidGlassColors.textSecondary,
       ),
     );
   }
