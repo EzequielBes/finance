@@ -20,4 +20,10 @@ void main() {
     expect(formatMonthYear(date, AppDateFormat.dmy), 'mar/2026');
     expect(formatMonthYear(date, AppDateFormat.mdy), 'mar/2026');
   });
+
+  test('formatMonth returns the uppercase abbreviated month name', () {
+    expect(formatMonth(DateTime(2026, 7, 15)), 'JUL');
+    expect(formatMonth(DateTime(2026, 1, 1)), 'JAN');
+    expect(formatMonth(DateTime(2026, 12, 31)), 'DEZ');
+  });
 }

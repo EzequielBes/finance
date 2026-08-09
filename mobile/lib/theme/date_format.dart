@@ -21,6 +21,11 @@ const _shortMonths = [
 String formatShortDate(DateTime date) =>
     '${date.day} ${_shortMonths[date.month - 1]}';
 
+/// "JUL" — abbreviated month name, uppercase, no year. Used in section
+/// labels that already communicate the time period visually (e.g. a
+/// month selector above the label).
+String formatMonth(DateTime date) => _shortMonths[date.month - 1].toUpperCase();
+
 /// "mar/2026" (dmy/mdy) or "2026/mar" (ymd) — abbreviated month and year.
 String formatMonthYear(DateTime date, AppDateFormat format) {
   final month = _shortMonths[date.month - 1];
