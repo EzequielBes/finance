@@ -6,7 +6,7 @@ class LiquidGlassColors {
   static const background = Color(0xFF12161A);
   static const surface = Color(0xFF1B2127);
   static const glassFill = Color(0xFF1D2329);
-  static const glassBorder = Color(0x08FFFFFF);
+  static const glassBorder = Color(0x05FFFFFF);
   static const textPrimary = Color(0xFFEDF1F4);
   static const textSecondary = Color(0xFF8B94A0);
   static const accentPrimary = Color(0xFFC17A54);
