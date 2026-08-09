@@ -36,7 +36,7 @@ enum GlassIntensity {
 
   double get fillAlpha => switch (this) {
     GlassIntensity.full => 0.20,
-    GlassIntensity.reduced => 0.32,
+    GlassIntensity.reduced => 0.20,
     GlassIntensity.opaque => 0.60,
   };
 }
