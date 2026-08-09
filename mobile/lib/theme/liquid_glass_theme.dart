@@ -6,7 +6,7 @@ class LiquidGlassColors {
   static const background = Color(0xFF12161A);
   static const surface = Color(0xFF1B2127);
   static const glassFill = Color(0xFF2A3138);
-  static const glassBorder = Color(0x1FFFFFFF);
+  static const glassBorder = Color(0x14FFFFFF);
   static const textPrimary = Color(0xFFEDF1F4);
   static const textSecondary = Color(0xFF8B94A0);
   static const accentPrimary = Color(0xFFC17A54);
@@ -35,9 +35,9 @@ enum GlassIntensity {
   };
 
   double get fillAlpha => switch (this) {
-    GlassIntensity.full => 0.55,
-    GlassIntensity.reduced => 0.70,
-    GlassIntensity.opaque => 0.95,
+    GlassIntensity.full => 0.38,
+    GlassIntensity.reduced => 0.50,
+    GlassIntensity.opaque => 0.80,
   };
 }
 
