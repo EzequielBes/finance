@@ -6,6 +6,7 @@ import 'package:mobile/providers/categories_provider.dart';
 import 'package:mobile/theme/liquid_glass_theme.dart';
 import 'package:mobile/settings/app_settings.dart';
 import 'package:mobile/theme/money_format.dart';
+import 'package:mobile/theme/money_input_formatter.dart';
 import 'package:mobile/theme/category_icons.dart';
 import 'package:mobile/widgets/glass_card.dart';
 
@@ -16,10 +17,16 @@ Future<void> showCategoryFormSheet(
   WidgetRef ref, {
   Category? existing,
 }) {
+  final currency = SettingsScope.of(context).currency;
+  final decimalSeparator = SettingsScope.of(context).decimalSeparator;
   final nameController = TextEditingController(text: existing?.name ?? '');
   final limitController = TextEditingController(
     text: existing?.monthlyLimit != null
-        ? existing!.monthlyLimit!.toStringAsFixed(2)
+        ? formatCents(
+            (existing!.monthlyLimit! * 100).round(),
+            currency,
+            decimalSeparator,
+          )
         : '',
   );
   var type = existing?.type ?? CategoryType.expense;
@@ -101,16 +108,16 @@ Future<void> showCategoryFormSheet(
                   const SizedBox(height: 8),
                   TextField(
                     controller: limitController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      MoneyInputFormatter(currency, decimalSeparator),
+                    ],
                     style: const TextStyle(
                       fontSize: 16,
                       color: LiquidGlassColors.textPrimary,
                     ),
                     decoration: InputDecoration(
-                      prefixText:
-                          '${currencySymbol(SettingsScope.of(ctx).currency)} ',
+                      prefixText: '${currencySymbol(currency)} ',
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 16,
@@ -202,7 +209,7 @@ Future<void> showCategoryFormSheet(
                     final limitText = limitController.text.trim();
                     final limitValue =
                         type == CategoryType.expense && limitText.isNotEmpty
-                        ? double.tryParse(limitText)
+                        ? parseMoneyInput(limitText, currency, decimalSeparator)
                         : null;
                     if (existing == null) {
                       await repo.create(
