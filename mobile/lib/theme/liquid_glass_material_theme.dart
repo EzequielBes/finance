@@ -58,7 +58,7 @@ ThemeData buildLiquidGlassMaterialTheme() {
     ),
     navigationBarTheme: NavigationBarThemeData(
       height: 72,
-      backgroundColor: LiquidGlassColors.background,
+      backgroundColor: Colors.transparent,
       indicatorColor: LiquidGlassColors.accentPrimary.withValues(alpha: 0.16),
       labelTextStyle: WidgetStateProperty.resolveWith(
         (states) => TextStyle(

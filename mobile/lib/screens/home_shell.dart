@@ -82,56 +82,57 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment(-0.4, -0.6),
-            radius: 1.2,
-            colors: [
-              LiquidGlassColors.surface,
-              LiquidGlassColors.background,
-            ],
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment(-0.4, -0.6),
+          radius: 1.2,
+          colors: [LiquidGlassColors.surface, LiquidGlassColors.background],
         ),
-        child: PageView(
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: PageView(
           controller: _pageController,
           physics: const BouncingScrollPhysics(),
           children: _screens,
         ),
-      ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: PageDotsIndicator(
-              controller: _pageController,
-              pageCount: _screens.length,
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: PageDotsIndicator(
+                controller: _pageController,
+                pageCount: _screens.length,
+              ),
             ),
-          ),
-          NavigationBar(
-            selectedIndex: _index,
-            onDestinationSelected: _navigateTo,
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.donut_large_outlined),
-                selectedIcon: Icon(Icons.donut_large),
-                label: 'Resumo',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.swap_vert_rounded),
-                label: 'Movimentos',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.account_balance_wallet_outlined),
-                selectedIcon: Icon(Icons.account_balance_wallet),
-                label: 'Despesas',
-              ),
-              NavigationDestination(icon: Icon(planSavingsIcon), label: 'Planos'),
-            ],
-          ),
-        ],
+            NavigationBar(
+              selectedIndex: _index,
+              onDestinationSelected: _navigateTo,
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.donut_large_outlined),
+                  selectedIcon: Icon(Icons.donut_large),
+                  label: 'Resumo',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.swap_vert_rounded),
+                  label: 'Movimentos',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.account_balance_wallet_outlined),
+                  selectedIcon: Icon(Icons.account_balance_wallet),
+                  label: 'Despesas',
+                ),
+                NavigationDestination(
+                  icon: Icon(planSavingsIcon),
+                  label: 'Planos',
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
